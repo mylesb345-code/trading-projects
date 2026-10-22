@@ -6,6 +6,7 @@ import os
 import sys
 import tempfile
 import unittest
+import unittest.mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bot_team  # noqa: E402
@@ -241,6 +242,25 @@ class TeamTests(unittest.TestCase):
             rows = bot_team.read_csv(os.path.join(d, "logs", "downtime.csv"))
             self.assertEqual(rows[0]["minutes"], "60")
             self.assertIn("60 minutes of downtime", team.summary(now + 3600, prices={"BTC": 100.0}))
+
+
+class BacktestTests(unittest.TestCase):
+    def test_replay_uses_live_rules_and_fills_next_open(self):
+        import backtest
+        setup = buy_setup(BASE + 200 * SLOT)
+        prev = setup[-1][4]
+        crash = [(setup[-1][0] + k * SLOT, prev, prev * 1.001, prev * 0.9, prev * 0.9) for k in (1, 2)]
+        candles = setup + crash
+        history = {"BTC": candles}
+        with unittest.mock.patch.object(backtest, "WINDOW", len(setup)):
+            trades, curve = backtest.run(CFG, history, candles[0][0])
+        self.assertEqual(len(trades), 1)
+        t = trades[0]
+        self.assertEqual(t["reason"], "stop-loss")
+        self.assertEqual(t["opened"], crash[0][0])  # filled at the open after the signal candle
+        self.assertGreaterEqual(t["pnl"], -200.01)  # never more than 2% of the account at the stop
+        s = backtest.summarize(trades, curve, CFG["starting_equity"])
+        self.assertEqual((s["trades"], s["losses"]), (1, 1))
 
 
 if __name__ == "__main__":

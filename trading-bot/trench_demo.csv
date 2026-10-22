@@ -1,1 +1,2 @@
 alert_date,alert,trench_side,multiplier,stake,trench_entry_price,close_date,trench_exit_price,trench_result_usd,notes
+2026-10-22,GO LONG (mirror of open signal),Up,1,1014.48,~81458,2026-10-22,~81447,-0.13,"Trench Paper. Opened by user; closed by accident after 3 min when Claude tapped the position card (a tap on the card cashes out). Not a strategy exit."
