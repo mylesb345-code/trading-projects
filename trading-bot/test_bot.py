@@ -214,6 +214,32 @@ class RunTests(unittest.TestCase):
         self.assertEqual([(r["coin"], r["tested"], r["side"], r["after_fee_pct"]) for r in rows],
                          [("BTC", "yes", "LONG", "-3.36"), ("ETH", "no", "LONG", "-3.36")])
 
+    def test_market_added_mid_signal_gets_no_paper_trade(self):
+        state, sent = {}, Recorder()
+        self.run_at(state, 20, sent)
+        cfg = small_cfg(symbols={"BTC-USD": "tested", "ETH-USD": "untested", "XRP-USD": "tested"})
+        bot.run_once(cfg, state, T0 + 20 * DAY + 7200, sent, fetch=self.fetch, journal_path=self.journal)
+        xrp = state["coins"]["XRP-USD"]
+        self.assertEqual((xrp["position"], xrp["paper"], xrp["joined_mid_signal"]), ("LONG", None, True))
+        self.assertIn("wait for the next fresh signal", sent.sent[-1][1])
+        sent.sent.clear()
+        self.closes.append(115)
+        bot.run_once(cfg, state, T0 + 21 * DAY + 3600, sent, fetch=self.fetch, journal_path=self.journal)
+        xrp_alert = next(s for s in sent.sent if s[0] == "XRP EXIT")
+        self.assertIn("no entry alert", xrp_alert[1])
+        self.assertNotIn("Trench: close your XRP", xrp_alert[1])
+        with open(self.journal) as f:
+            self.assertNotIn("XRP", [r["coin"] for r in csv.DictReader(f)])
+
+    def test_research_decides_which_markets_alert(self):
+        path = os.path.join(self.tmp.name, "selected.json")
+        bot.save_json(path, {"selected": [{"symbol": "XRP-USD", "rule": "trend_ema50_200", "tf": "1d"},
+                                          {"symbol": "ETH-USD", "rule": "momentum_90", "tf": "1d"}]})
+        symbols = bot.apply_research({"BTC-USD": "tested", "ETH-USD": "untested"}, path)
+        self.assertEqual(symbols, {"BTC-USD": "untested", "ETH-USD": "untested", "XRP-USD": "tested"})
+        self.assertEqual(bot.apply_research({"BTC-USD": "tested"}, os.path.join(self.tmp.name, "missing.json")),
+                         {"BTC-USD": "tested"})
+
     def test_flip_opens_new_paper_trade(self):
         state, sent = {}, Recorder()
         self.run_at(state, 20, sent)

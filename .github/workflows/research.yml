@@ -1,0 +1,38 @@
+# Re-runs the strategy research once a month on fresh data. If a market gains or loses its signal, your phone gets
+# a message, and the swing bot (trading-bot/bot.py) picks up the new list on its next hourly check.
+name: research
+
+on:
+  schedule:
+    - cron: "30 2 1 * *"  # 02:30 UTC on the 1st of each month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot  # never runs at the same time as the hourly bot, so their saves can't clash
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Test every rule on every market (paper research)
+        run: python3 research/research.py --notify
+
+      - name: Save the results
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/REPORT.md research/results.csv research/selected.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Monthly research $(date -u '+%Y-%m-%d')"
+            git pull --rebase
+            git push
+          fi

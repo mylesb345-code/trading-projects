@@ -9,9 +9,11 @@
   "ntfy_topic": "old-topic-removed",
   "paper_multiplier": 1,
   "symbols": {
+    "AVAX-USD": "tested",
     "BTC-USD": "tested",
     "ETH-USD": "untested",
-    "SOL-USD": "untested"
+    "SOL-USD": "untested",
+    "XRP-USD": "tested"
   },
   "trench_fee_on_wins": 0.08
 }

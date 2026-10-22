@@ -73,10 +73,26 @@ def save_json(path, data):
     os.replace(tmp, path)
 
 
-def load_config(path=CONFIG_PATH):
+RESEARCH_PATH = os.path.join(HERE, "..", "research", "selected.json")
+
+
+def load_config(path=CONFIG_PATH, research_path=RESEARCH_PATH):
     cfg = dict(DEFAULTS)
     cfg.update(load_json(path, {}))
+    cfg["symbols"] = apply_research(dict(cfg["symbols"]), research_path)
     return cfg
+
+
+def apply_research(symbols, research_path=RESEARCH_PATH):
+    """Markets where this rule passed the research (research/selected.json) get real alerts ("tested");
+    every other market stays paper-only. Without a research file, config.json decides."""
+    research = load_json(research_path, None)
+    if research is None:
+        return symbols
+    passed = {s["symbol"] for s in research.get("selected", []) if s["rule"] == "trend_ema50_200" and s["tf"] == "1d"}
+    for symbol in passed:
+        symbols[symbol] = "tested"
+    return {sym: ("tested" if sym in passed else "untested") for sym in symbols}
 
 
 def iso(t):
@@ -231,6 +247,8 @@ def status_line(coin, tested, st, latest, cfg):
     parts = [f"{label}: {pos}"]
     if st.get("signal"):
         parts[0] += f" since {day_str(st['signal'][0])} at {money(st['signal'][1])}"
+    if st.get("joined_mid_signal"):
+        parts.append("started before alerts, wait for the next fresh signal")
     parts.append(f"close {money(latest['close'])}")
     p = st.get("paper")
     if p:
@@ -263,15 +281,22 @@ def run_once(cfg, state, now, notify, fetch=get_candles, journal_path=JOURNAL_PA
         st = coins.get(symbol)
         if st is None:
             st = coins[symbol] = {"position": position, "signal": entry, "paper": None, "last_candle": t}
-            if position:
+            if position and first_run:
                 st["paper"] = {"side": position, "entry_time": t, "entry_price": close}
+            elif position:
+                # A market added later, in the middle of a signal: no entry alert was ever sent, so no paper trade
+                # either. The next fresh signal starts a clean one.
+                st["joined_mid_signal"] = True
             newest_candle = max(newest_candle or t, t)
         elif t > st["last_candle"]:
             newest_candle = max(newest_candle or t, t)
             st["last_candle"] = t
             if position != st["position"]:
                 lines = [f"{coin}: {TRANSITIONS[(st['position'], position)]}"]
-                if st["position"]:
+                if st["position"] and st.pop("joined_mid_signal", False):
+                    lines.append(f"(This {st['position']} started before the bot watched {coin}, so there was no entry "
+                                 "alert. Nothing to close unless you opened one yourself.)")
+                elif st["position"]:
                     lines.append(f"Trench: close your {coin} {TRENCH_SIDE[st['position']]} position.")
                 if position:
                     lines.append(f"Trench: open {coin} {TRENCH_SIDE[position]}. The backtest used x1 (no leverage).")

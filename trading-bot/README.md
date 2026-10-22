@@ -12,6 +12,14 @@ This bot checks the market around the clock, follows the one rule that passed it
 - Sends trade alerts to your phone, plus one status message a day after the daily close (8 PM ET, or 7 PM ET in winter).
 - Tells you if it can't get prices for 3 checks in a row.
 
+## Which markets send real alerts (decided by research)
+
+`research/research.py` tests 4 textbook rules on 15 markets with Trench's costs, and only keeps what works on history it never saw (details in `research/REPORT.md`). As of 2026-10-22, this bot's daily trend rule passed on **BTC, XRP and AVAX**, so those three send alerts. ETH and SOL are tracked on paper only.
+
+The research re-runs on the 1st of every month. If a market gains or loses its pass, your phone gets a "Monthly research" message and the bot switches alerts on or off by itself.
+
+A market added while a signal is already running doesn't count that signal: there was no entry alert, so the bot waits for the next fresh one.
+
 ## What it does not do
 
 - **It does not click Trench for you.** Trench.io has no API, so there's nothing for a bot to connect to. When an alert comes in, you place the trade yourself; it takes about a minute.
