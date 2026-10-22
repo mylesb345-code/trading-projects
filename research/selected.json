@@ -1,38 +1,6 @@
 {
- "generated": "2026-10-22 21:11 UTC",
+ "generated": "2026-10-22 21:46 UTC",
  "selected": [
-  {
-   "rule": "trend_ema50_200",
-   "tf": "1d",
-   "symbol": "BTC-USD",
-   "trench": "BTC",
-   "source": "coinbase",
-   "name": "Bitcoin",
-   "trades": 71,
-   "pf_in": 3.99670552965471,
-   "pf_out": 2.0188258132887227,
-   "ret_out": 0.5193506237229824,
-   "hold_out": 0.22582292759614342,
-   "max_dd": -0.6382437845500428,
-   "win_rate": 0.2676056338028169,
-   "out_of_sample_from": "2024-05-25"
-  },
-  {
-   "rule": "trend_ema50_200",
-   "tf": "1d",
-   "symbol": "XRP-USD",
-   "trench": "XRP",
-   "source": "coinbase",
-   "name": "XRP",
-   "trades": 47,
-   "pf_in": 1.4186866582093651,
-   "pf_out": 1.8338256609626313,
-   "ret_out": 0.11778633988389164,
-   "hold_out": -0.5578207039605885,
-   "max_dd": -0.7156102005021326,
-   "win_rate": 0.14893617021276595,
-   "out_of_sample_from": "2025-09-18"
-  },
   {
    "rule": "trend_ema50_200",
    "tf": "1d",
@@ -47,7 +15,42 @@
    "hold_out": -0.7312256267409472,
    "max_dd": -0.5743480552937426,
    "win_rate": 0.30357142857142855,
-   "out_of_sample_from": "2024-12-31"
+   "out_of_sample_from": "2024-12-31",
+   "passed_today": true
+  },
+  {
+   "rule": "trend_ema50_200",
+   "tf": "1d",
+   "symbol": "BTC-USD",
+   "trench": "BTC",
+   "source": "coinbase",
+   "name": "Bitcoin",
+   "trades": 71,
+   "pf_in": 3.9967055296547094,
+   "pf_out": 2.0188258132887227,
+   "ret_out": 0.5193506237229824,
+   "hold_out": 0.22582292759614342,
+   "max_dd": -0.6382437845500428,
+   "win_rate": 0.2676056338028169,
+   "out_of_sample_from": "2024-05-25",
+   "passed_today": true
+  },
+  {
+   "rule": "trend_ema50_200",
+   "tf": "1d",
+   "symbol": "XRP-USD",
+   "trench": "XRP",
+   "source": "coinbase",
+   "name": "XRP",
+   "trades": 47,
+   "pf_in": 1.418686658209365,
+   "pf_out": 1.8338256609626313,
+   "ret_out": 0.11778633988389164,
+   "hold_out": -0.5578207039605885,
+   "max_dd": -0.7156102005021326,
+   "win_rate": 0.14893617021276595,
+   "out_of_sample_from": "2025-09-18",
+   "passed_today": true
   }
  ]
 }
