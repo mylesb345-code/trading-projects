@@ -43,5 +43,37 @@ class ResearchTests(unittest.TestCase):
         self.assertEqual(r["position"], 1)
 
 
+class SelectionTests(unittest.TestCase):
+    def rows(self, passing, symbols=("A", "B", "C", "D")):
+        return [{"rule": "trend", "tf": "1d", "symbol": s, "passed": s in passing} for s in symbols]
+
+    def prev(self, symbols):
+        return [{"rule": "trend", "tf": "1d", "symbol": s} for s in symbols]
+
+    def test_first_run_takes_todays_passes(self):
+        got = research.confirm_selection(self.rows("ABC"), [], {}, first_run=True)
+        self.assertEqual(got, {"trend|1d|A", "trend|1d|B", "trend|1d|C"})
+
+    def test_new_market_joins_only_after_five_passes_in_a_row(self):
+        streaks, prev = {}, self.prev("ABC")
+        for day in range(1, 6):
+            got = research.confirm_selection(self.rows("ABCD"), prev, streaks, first_run=False)
+            self.assertEqual("trend|1d|D" in got, day == 5)
+
+    def test_market_leaves_only_after_five_fails_and_rule_needs_three(self):
+        streaks, prev = {}, self.prev("ABCD")
+        for day in range(1, 6):
+            got = research.confirm_selection(self.rows("ABC"), prev, streaks, first_run=False)
+            self.assertEqual("trend|1d|D" in got, day < 5)
+        streaks = {}
+        for day in range(1, 6):
+            got = research.confirm_selection(self.rows("AB", "ABC"), self.prev("ABC"), streaks, first_run=False)
+        self.assertEqual(got, set())  # C dropped, leaving 2 markets: the whole rule stops
+
+    def test_missing_data_keeps_place(self):
+        got = research.confirm_selection(self.rows("AB", "AB"), self.prev("ABC"), {}, first_run=False)
+        self.assertEqual(got, {"trend|1d|A", "trend|1d|B", "trend|1d|C"})
+
+
 if __name__ == "__main__":
     unittest.main()

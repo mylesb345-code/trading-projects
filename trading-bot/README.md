@@ -16,7 +16,7 @@ This bot checks the market around the clock, follows the one rule that passed it
 
 `research/research.py` tests 4 textbook rules on 15 markets with Trench's costs, and only keeps what works on history it never saw (details in `research/REPORT.md`). As of 2026-10-22, this bot's daily trend rule passed on **BTC, XRP and AVAX**, so those three send alerts. ETH and SOL are tracked on paper only.
 
-The research re-runs on the 1st of every month. If a market gains or loses its pass, your phone gets a "Monthly research" message and the bot switches alerts on or off by itself.
+The research re-runs **every day** at 8:40 PM New York time, and your phone gets a short "Daily research" digest: where signals come from, what's close to joining or dropping, and the live paper record so far. A market joins only after passing **5 days in a row** and leaves only after failing 5 days in a row, so one noisy day can't switch alerts on or off. The bot picks up changes on its next hourly check.
 
 A market added while a signal is already running doesn't count that signal: there was no entry alert, so the bot waits for the next fresh one.
 

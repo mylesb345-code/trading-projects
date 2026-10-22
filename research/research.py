@@ -3,7 +3,7 @@
 what holds up on data the rules never saw. PAPER RESEARCH ONLY: no orders, no keys.
 
   python research.py            download history, test every rule on every market, write REPORT.md and selected.json
-  python research.py --notify   the same, then message your phone (trading-bot's ntfy channel) with what changed
+  python research.py --notify   the same, then send the daily digest to your phone (trading-bot's ntfy channel)
 
 The method is fixed up front, so the results can't be tuned to look good:
   - rules use standard settings from trading literature; nothing is optimized
@@ -32,6 +32,7 @@ SLIP = 0.001
 WIN_FEE = 0.08
 IN_SAMPLE = 0.6
 MIN_TRADES, MIN_OOS_TRADES, MIN_PF, MIN_MARKETS = 15, 5, 1.3, 3
+CONFIRM_DAYS = 5
 YEARS = 6
 
 MARKETS = [
@@ -252,25 +253,75 @@ def day(t):
     return datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d")
 
 
-def notify_changes(previous, current, always=False):
-    """Phone message about markets that gained or lost a signal since the last research run."""
+def pair_key(rule, tf, symbol):
+    return f"{rule}|{tf}|{symbol}"
+
+
+def confirm_selection(rows, previous, streaks, first_run):
+    """Which pairs give live signals. A pair joins after passing CONFIRM_DAYS runs in a row and leaves after failing
+    CONFIRM_DAYS runs in a row, so one day's wobble can't switch alerts on or off. A rule/timeframe still needs
+    MIN_MARKETS confirmed markets. Pairs with no data today keep their streaks and their place."""
+    for r in rows:
+        st = streaks.setdefault(pair_key(r["rule"], r["tf"], r["symbol"]), {"pass": 0, "fail": 0})
+        st["pass"], st["fail"] = (st["pass"] + 1, 0) if r["passed"] else (0, st["fail"] + 1)
+    passing = {pair_key(r["rule"], r["tf"], r["symbol"]) for r in rows if r["passed"]}
+    if first_run:
+        confirmed = passing
+    else:
+        kept = {pair_key(p["rule"], p["tf"], p["symbol"]) for p in previous}
+        confirmed = {k for k in kept if streaks.get(k, {}).get("fail", 0) < CONFIRM_DAYS}
+        confirmed |= {k for k in passing if streaks[k]["pass"] >= CONFIRM_DAYS}
+    groups = {}
+    for k in confirmed:
+        rule, tf, _ = k.split("|")
+        groups.setdefault((rule, tf), set()).add(k)
+    return {k for ks in groups.values() if len(ks) >= MIN_MARKETS for k in ks}
+
+
+def paper_record(journal_path=os.path.join(HERE, "..", "trading-bot", "journal.csv")):
+    """The live paper results so far for markets that send real alerts."""
+    try:
+        with open(journal_path, newline="") as f:
+            rows = [r for r in csv.DictReader(f) if r["tested"] == "yes"]
+    except FileNotFoundError:
+        rows = []
+    wins = sum(float(r["after_fee_pct"]) > 0 for r in rows)
+    total = sum(float(r["after_fee_pct"]) for r in rows)
+    return (f"Live paper record: {len(rows)} closed trades, {wins} wins, {total:+.1f}% added up after fees. "
+            f"Judge it after 30 trades, not before.")
+
+
+def digest(previous, selected, streaks, rows):
+    """The daily phone message: where signals come from, what changed, what's close to changing, live record."""
+    def label(k):
+        rule, tf, sym = k.split("|")
+        trench = next((m["trench"] for m in MARKETS if m["symbol"] == sym), sym)
+        return f"{trench} {rule} {tf}"
+
+    old = {pair_key(p["rule"], p["tf"], p["symbol"]) for p in previous}
+    new = {pair_key(p["rule"], p["tf"], p["symbol"]) for p in selected}
+    lines = ["Signals come from: " + (", ".join(sorted(label(k) for k in new)) or "nothing (no rule passed)")]
+    if new - old:
+        lines.append("ADDED (passed 5 days running): " + ", ".join(sorted(label(k) for k in new - old)))
+    if old - new:
+        lines.append("DROPPED (alerts stop, paper only): " + ", ".join(sorted(label(k) for k in old - new)))
+    rising = sorted(f"{label(k)} {v['pass']}/{CONFIRM_DAYS}" for k, v in streaks.items()
+                    if k not in new and 0 < v["pass"] < CONFIRM_DAYS)
+    slipping = sorted(f"{label(k)} {v['fail']}/{CONFIRM_DAYS}" for k, v in streaks.items()
+                      if k in new and v["fail"] > 0)
+    if rising:
+        lines.append("Close to joining: " + ", ".join(rising))
+    if slipping:
+        lines.append("Failing lately: " + ", ".join(slipping))
+    lines.append(f"Tested today: {len(rows)} rule/market pairs, {sum(r['passed'] for r in rows)} passed.")
+    lines.append(paper_record())
+    return "\n".join(lines)
+
+
+def notify(text):
     sys.path.insert(0, os.path.join(HERE, "..", "trading-bot"))
     import bot
-
-    def keys(sel):
-        return {f"{s['trench']} ({s['rule']}, {s['tf']})" for s in sel}
-
-    old, new = keys(previous), keys(current)
-    added, dropped = sorted(new - old), sorted(old - new)
-    if not (added or dropped or always):
-        return
-    lines = [f"Signals now come from: {', '.join(sorted(new)) or 'nothing (no rule passed)'}"]
-    if added:
-        lines.append("Newly passed: " + ", ".join(added))
-    if dropped:
-        lines.append("No longer passing (alerts stop, paper tracking only): " + ", ".join(dropped))
-    lines.append("Full results: research/REPORT.md in your repo.")
-    bot.make_notifier(bot.load_config())("Monthly research", "\n".join(lines), "default")
+    bot.make_notifier(bot.load_config())("Daily research", text, "default")
 
 
 def main(argv=None):
@@ -310,6 +361,13 @@ def main(argv=None):
                         fmt_pf(i["pf"]), fmt_pf(o["pf"]), f"{fu['ret']:.3f}", f"{o['ret']:.3f}", f"{o['hold']:.3f}",
                         f"{fu['dd']:.3f}", r["position"]])
 
+    streaks_path = os.path.join(HERE, "streaks.json")
+    first_run = not previous and not os.path.exists(streaks_path)
+    streaks = json.load(open(streaks_path)) if os.path.exists(streaks_path) else {}
+    confirmed = confirm_selection(rows, previous, streaks, first_run)
+    by_key = {pair_key(r["rule"], r["tf"], r["symbol"]): r for r in rows}
+    prev_by_key = {pair_key(p["rule"], p["tf"], p["symbol"]): p for p in previous}
+
     selected, lines = [], []
     lines.append("# Strategy research report\n")
     lines.append(f"Run {datetime.now(timezone.utc):%Y-%m-%d %H:%M UTC}. {len(MARKETS)} markets, {len(RULES)} rules, "
@@ -317,41 +375,41 @@ def main(argv=None):
                  "Trench's 8% fee on wins, x1. Fills at the next bar's open. Paper research, not financial advice.\n")
     lines.append(f"A pair passes with {MIN_TRADES}+ trades ({MIN_OOS_TRADES}+ out-of-sample), profit factor > {MIN_PF} "
                  "in both the first 60% and the last 40% of history, and an out-of-sample return above buy-and-hold. "
-                 f"A rule is selected only if it passes on {MIN_MARKETS}+ markets.\n")
-    lines.append("| Rule | Timeframe | Markets tested | Passed | Passing markets | Selected |")
-    lines.append("|---|---|---|---|---|---|")
+                 f"It joins the live signals after passing {CONFIRM_DAYS} daily runs in a row and leaves after failing "
+                 f"{CONFIRM_DAYS} in a row. A rule needs {MIN_MARKETS}+ confirmed markets.\n")
+    lines.append("| Rule | Timeframe | Markets tested | Passed today | Passing today |")
+    lines.append("|---|---|---|---|---|")
     for key, (_, desc) in RULES.items():
         for tf in ("1d", "6h"):
             group = [r for r in rows if r["rule"] == key and r["tf"] == tf]
-            if not group:
-                continue
-            ok = [r for r in group if r["passed"]]
-            sel = len(ok) >= MIN_MARKETS
-            lines.append(f"| {desc} | {tf} | {len(group)} | {len(ok)} | {', '.join(r['trench'] for r in ok) or '-'} | "
-                         f"{'YES' if sel else 'no'} |")
-            if sel:
-                for r in ok:
-                    selected.append({"rule": key, "tf": tf, "symbol": r["symbol"], "trench": r["trench"],
-                                     "source": names[r["symbol"]]["source"], "name": names[r["symbol"]]["name"],
-                                     "trades": r["full"]["trades"], "pf_in": r["in"]["pf"], "pf_out": r["oos"]["pf"],
-                                     "ret_out": r["oos"]["ret"], "hold_out": r["oos"]["hold"],
-                                     "max_dd": r["full"]["dd"], "win_rate": r["full"]["win_rate"],
-                                     "out_of_sample_from": day(r["split"])})
+            if group:
+                ok = [r for r in group if r["passed"]]
+                lines.append(f"| {desc} | {tf} | {len(group)} | {len(ok)} | {', '.join(r['trench'] for r in ok) or '-'} |")
+    for k in sorted(confirmed):
+        r = by_key.get(k)
+        if r is None:
+            selected.append(prev_by_key[k])
+            continue
+        selected.append({"rule": r["rule"], "tf": r["tf"], "symbol": r["symbol"], "trench": r["trench"],
+                         "source": names[r["symbol"]]["source"], "name": names[r["symbol"]]["name"],
+                         "trades": r["full"]["trades"], "pf_in": r["in"]["pf"], "pf_out": r["oos"]["pf"],
+                         "ret_out": r["oos"]["ret"], "hold_out": r["oos"]["hold"], "max_dd": r["full"]["dd"],
+                         "win_rate": r["full"]["win_rate"], "out_of_sample_from": day(r["split"]),
+                         "passed_today": r["passed"]})
     lines.append("")
     if selected:
         lines.append("## Selected for live signals\n")
-        lines.append("| Market (Trench) | Rule | TF | Trades | Win rate | PF in / out | Out-of-sample return vs hold | Max drawdown |")
-        lines.append("|---|---|---|---|---|---|---|---|")
+        lines.append("| Market (Trench) | Rule | TF | Trades | Win rate | PF in / out | Out-of-sample return vs hold | Max drawdown | Passed today |")
+        lines.append("|---|---|---|---|---|---|---|---|---|")
         for s in selected:
-            pf_in = fmt_pf(s["pf_in"])
-            pf_out = fmt_pf(s["pf_out"])
             lines.append(f"| {s['trench']} | {s['rule']} | {s['tf']} | {s['trades']} | {s['win_rate']:.0%} | "
-                         f"{pf_in} / {pf_out} | {s['ret_out']:+.0%} vs {s['hold_out']:+.0%} | {s['max_dd']:.0%} |")
+                         f"{fmt_pf(s['pf_in'])} / {fmt_pf(s['pf_out'])} | {s['ret_out']:+.0%} vs {s['hold_out']:+.0%} | "
+                         f"{s['max_dd']:.0%} | {'yes' if s.get('passed_today', True) else 'no'} |")
     else:
-        lines.append("## Nothing selected\n\nNo rule passed on enough markets. No live signals until something does.")
+        lines.append("## Nothing selected\n\nNo rule is confirmed on enough markets. No live signals until one is.")
     lines.append("\nThese are past results with simulated fills. Real fills, holding fees and gaps will differ. "
                  "Many rule/market pairs were tested, so some passes can still be luck; that's why a rule needs "
-                 f"{MIN_MARKETS}+ markets to be selected.")
+                 f"{MIN_MARKETS}+ markets and a {CONFIRM_DAYS}-day streak.")
     with open(os.path.join(HERE, "REPORT.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
     for s in selected:
@@ -361,9 +419,13 @@ def main(argv=None):
     with open(os.path.join(HERE, "selected.json"), "w") as f:
         json.dump({"generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "selected": selected}, f,
                   indent=1)
+    with open(streaks_path, "w") as f:
+        json.dump(streaks, f, indent=1, sort_keys=True)
     print("\n".join(lines))
+    text = digest(previous, selected, streaks, rows)
+    print("\n" + text)
     if args.notify:
-        notify_changes(previous, selected)
+        notify(text)
     return 0
 
 
