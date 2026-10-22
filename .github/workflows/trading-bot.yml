@@ -1,0 +1,40 @@
+# Runs the BTC swing bot (trading-bot/bot.py) once an hour on GitHub's computers, so it works while your Mac is off.
+# PAPER ONLY: it reads public prices, paper-trades the rule and sends phone alerts. It cannot place orders anywhere.
+# Hourly is plenty for a rule on daily candles, and keeps this inside GitHub's free minutes for a private repo.
+name: trading-bot
+
+on:
+  schedule:
+    - cron: "10 * * * *"  # every hour at :10 (GitHub can start it a few minutes late)
+  workflow_dispatch:       # adds a "Run workflow" button for a manual check
+
+permissions:
+  contents: write  # lets the bot save its memory (state.json, journal.csv) back into the repo
+
+concurrency:
+  group: trading-bot
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run one check (paper only)
+        run: python3 trading-bot/bot.py
+
+      - name: Save the bot's memory
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add trading-bot/state.json
+          [ -f trading-bot/journal.csv ] && git add trading-bot/journal.csv
+          if git diff --cached --quiet; then
+            echo "Nothing new to save."
+          else
+            git commit -m "Bot check $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git pull --rebase
+            git push
+          fi

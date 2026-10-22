@@ -1,0 +1,14 @@
+# Private keys and settings: never upload these.
+.env
+.claude/
+
+# Local run files. trading-bot/state.json and trading-bot/journal.csv are NOT listed on purpose:
+# GitHub Actions saves them in the repo so the bot remembers its position between runs.
+bot-team/state.json
+bot-team/logs/
+bot-team/STOP
+market-sphere/paper_state.json
+market-sphere/logs/
+*.tmp
+__pycache__/
+.DS_Store

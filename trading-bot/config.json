@@ -1,0 +1,17 @@
+{
+  "alert_after_failed_runs": 3,
+  "daily_status": true,
+  "ema_fast": 50,
+  "ema_slow": 200,
+  "history_days": 1000,
+  "loop_minutes": 15,
+  "ntfy_server": "https://ntfy.sh",
+  "ntfy_topic": "old-topic-removed",
+  "paper_multiplier": 1,
+  "symbols": {
+    "BTC-USD": "tested",
+    "ETH-USD": "untested",
+    "SOL-USD": "untested"
+  },
+  "trench_fee_on_wins": 0.08
+}

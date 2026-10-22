@@ -1,0 +1,22 @@
+{
+  "paper_only": true,
+  "executor": "simulated",
+  "coins": ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "LTC", "BCH"],
+  "check_seconds": 60,
+  "ema_fast": 9,
+  "ema_slow": 21,
+  "rsi_period": 14,
+  "rsi_min": 50,
+  "rsi_max": 70,
+  "atr_period": 14,
+  "stop_atr": 1.5,
+  "reward_risk": 2.0,
+  "max_hold_hours": 48,
+  "starting_equity": 10000,
+  "risk_per_trade": 0.02,
+  "max_open_trades": 3,
+  "daily_loss_limit": 0.06,
+  "min_order_usd": 10,
+  "fee_bps": 25,
+  "slippage_bps": 5
+}
