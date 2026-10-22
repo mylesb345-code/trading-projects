@@ -25,11 +25,15 @@ jobs:
       - name: Run one check (paper only)
         run: python3 trading-bot/bot.py
 
+      - name: Volatility clock (big-move alerts, Sunday report)
+        run: python3 trading-bot/volclock.py
+
       - name: Save the bot's memory
         run: |
           git config user.name "trading-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add trading-bot/state.json
+          [ -f trading-bot/volclock_state.json ] && git add trading-bot/volclock_state.json
           [ -f trading-bot/journal.csv ] && git add trading-bot/journal.csv
           if git diff --cached --quiet; then
             echo "Nothing new to save."

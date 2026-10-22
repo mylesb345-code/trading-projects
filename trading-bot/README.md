@@ -46,6 +46,18 @@ The file `.github/workflows/trading-bot.yml` (in the folder above this one) runs
 - To check it's working, open the repo on github.com → **Actions** → **trading-bot**. Each run is listed there; a green tick means it worked. **Run workflow** starts a check right away.
 - To pause it, open **Actions** → **trading-bot** → **…** → **Disable workflow**.
 
+## Volatility clock: when BTC moves the most
+
+`volclock.py` runs right after the bot each hour. It looks at the last 90 days of hourly BTC prices and works out how far BTC typically moves within each hour of the day (New York time).
+
+- **Big-move alert:** if the hour that just finished moved at least **2.5×** its normal amount for that time of day, and at least **1%** from high to low, your phone gets "BTC big move UP/DOWN" with the size of the move. It's a heads-up, not a trade signal. The swing rule still only acts on daily closes.
+- **Sunday report:** once a week, your phone gets the busiest and quietest hours and days.
+- `python volclock.py --report` sends the report right away.
+
+Settings (optional, in `config.json`): `vol_spike_ratio`, `vol_spike_min_pct`, `vol_lookback_days`, `vol_timezone`.
+
+**Read this:** the hours when BTC moves the most are also the hours when it can move furthest against you. Busy hours mean more risk as well as more opportunity, especially with a multiplier.
+
 ## Mirroring alerts in Trench's demo mode
 
 When a BTC alert arrives, do the same thing in Trench's **demo** account, then add a row to `trench_demo.csv` (it opens in Excel, Numbers or Google Sheets):
