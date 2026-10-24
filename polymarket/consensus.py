@@ -4,6 +4,7 @@ READ-ONLY: public on-chain data, no account, no orders.
 
   python consensus.py                 15 whales, positions worth $1,000+
   python consensus.py --whales 25 --min 5000
+  python consensus.py --alert         also push new strong agreements to your phone (trading-bot's ntfy channel)
 
 Polymarket runs on a public blockchain, so every trader's open positions are public (Kalshi hides them).
 "Proven" means a wallet is in BOTH Polymarket's all-time top 200 by profit AND the last 30 days' top 200, so it
@@ -100,6 +101,47 @@ def build(whales, positions):
     return rows
 
 
+ALERT_MIN_WHALES, ALERT_MIN_CONSENSUS, ALERT_MAX_RUN = 3, 0.75, 0.05
+ALERTED_PATH = os.path.join(HERE, "alerted.json")
+
+
+def worth_alerting(r):
+    """3+ proven whales on the same side, 75%+ agreement, and the price still within 5 cents of what they paid
+    (a bigger move usually means the game has started or the edge is gone)."""
+    return (r["agree"] >= ALERT_MIN_WHALES and r["consensus"] >= ALERT_MIN_CONSENSUS and r["avg_entry"] is not None
+            and abs(r["price"] - r["avg_entry"]) <= ALERT_MAX_RUN)
+
+
+def send_alerts(rows, notify, now, path=ALERTED_PATH, limit=5):
+    """One push per market and side, the first time it qualifies. Returns the alerts sent."""
+    try:
+        with open(path) as f:
+            sent = json.load(f)
+    except FileNotFoundError:
+        sent = {}
+    sent = {k: t for k, t in sent.items() if now - t < 14 * 86400}  # forget after two weeks
+    fresh = [r for r in rows if worth_alerting(r) and f"{r['cid']}|{r['pick']}" not in sent][:limit]
+    for r in fresh:
+        others = ", ".join(f"{o} {n}" for o, (n, _) in r["sides"].items() if o != r["pick"]) or "none"
+        notify(f"Whale consensus: {r['pick']} ({r['agree']}/{r['whales']})",
+               f"{r['title']} (ends {r['end']})\n"
+               f"{r['agree']} of {r['whales']} proven Polymarket whales hold {r['pick']} ({money(r['pick_usd'])}). "
+               f"Other side: {others}.\n"
+               f"They paid {r['avg_entry'] * 100:.0f}c on average; it's {r['price'] * 100:.0f}c now.\n"
+               "On Kalshi: find the same game and only consider it near that price. Whales lose too. "
+               "Not financial advice.", "default")
+        sent[f"{r['cid']}|{r['pick']}"] = now
+    with open(path, "w") as f:
+        json.dump(sent, f, indent=1, sort_keys=True)
+    return fresh
+
+
+def notifier():
+    sys.path.insert(0, os.path.join(HERE, "..", "trading-bot"))
+    import bot
+    return bot.make_notifier(bot.load_config())
+
+
 def short(name, n=12):
     return name if len(name) <= n else name[:n - 1] + "…"
 
@@ -164,6 +206,7 @@ def main(argv=None):
     ap.add_argument("--whales", type=int, default=15)
     ap.add_argument("--min", type=float, default=1000, help="smallest position to count, in dollars")
     ap.add_argument("--rows", type=int, default=30)
+    ap.add_argument("--alert", action="store_true", help="push new strong agreements to your phone")
     a = ap.parse_args(argv)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     whales = proven_whales(a.whales)
@@ -174,7 +217,8 @@ def main(argv=None):
         except Exception as e:
             print(f"{w['userName']}: skipped ({e})", file=sys.stderr)
             positions[w["proxyWallet"]] = []
-    rows = [r for r in build(whales, positions) if r["whales"] >= 2][:a.rows]
+    all_rows = [r for r in build(whales, positions) if r["whales"] >= 2]
+    rows = all_rows[:a.rows]
     made = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     with open(os.path.join(HERE, "consensus.html"), "w") as f:
         f.write(render(whales, rows, made, a.min))
@@ -193,6 +237,10 @@ def main(argv=None):
         entry = "-" if r["avg_entry"] is None else f"{r['avg_entry'] * 100:.0f}c"
         print(f"{r['agree']}/{r['whales']} {r['consensus']:>4.0%}  {r['pick'][:18]:<18} paid {entry:>4} now {r['price'] * 100:>3.0f}c  "
               f"{money(r['pick_usd']):>8}  {r['title'][:70]}  (ends {r['end']})")
+    if a.alert:
+        fresh = send_alerts(all_rows, notifier(), time.time())
+        print(f"Phone alerts sent: {len(fresh)}" + "".join(f"\n  {r['pick']} ({r['agree']}/{r['whales']}) {r['title']}"
+                                                         for r in fresh))
     return 0
 
 
