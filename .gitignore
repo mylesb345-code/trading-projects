@@ -12,3 +12,5 @@ market-sphere/logs/
 *.tmp
 __pycache__/
 .DS_Store
+polymarket/consensus.html
+polymarket/consensus.csv
