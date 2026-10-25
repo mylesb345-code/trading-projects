@@ -1,0 +1,45 @@
+# Re-scores proven Polymarket traders every Monday on their last 90 days of settled bets and rewrites
+# polymarket/copy_list.json, which the hourly copy alerts follow. Read-only: public data, no orders.
+name: rank
+
+on:
+  schedule:
+    - cron: "15 1 * * 1"  # Mondays 01:15 UTC (Sunday 9:15 PM New York)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot  # never at the same time as the hourly bot, so their saves can't clash
+  cancel-in-progress: false
+
+jobs:
+  rank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Score traders and rebuild the copy list
+        run: |
+          python3 polymarket/rank.py
+          cd trading-bot && python3 -c "
+          import json, bot
+          d = json.load(open('../polymarket/copy_list.json'))
+          names = ', '.join(t['name'] for t in d['traders']) or 'nobody passed this week'
+          bot.make_notifier(bot.load_config())('Weekly copy list', 'Copy alerts now follow: ' + names, 'default')"
+
+      - name: Save the results
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add polymarket/copy_list.json polymarket/rank.csv
+          [ -f polymarket/copy_state.json ] && git add polymarket/copy_state.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Weekly trader ranking $(date -u '+%Y-%m-%d')"
+            git pull --rebase
+            git push
+          fi

@@ -32,6 +32,10 @@ jobs:
         continue-on-error: true  # a Polymarket outage must never stop the bot from saving its memory
         run: python3 polymarket/consensus.py --alert
 
+      - name: Copy alerts (new bets by traders on polymarket/copy_list.json)
+        continue-on-error: true
+        run: python3 polymarket/copy_alerts.py
+
       - name: Save the bot's memory
         run: |
           git config user.name "trading-bot"
@@ -39,6 +43,7 @@ jobs:
           git add trading-bot/state.json
           [ -f trading-bot/volclock_state.json ] && git add trading-bot/volclock_state.json
           [ -f polymarket/alerted.json ] && git add polymarket/alerted.json
+          [ -f polymarket/copy_state.json ] && git add polymarket/copy_state.json
           [ -f trading-bot/journal.csv ] && git add trading-bot/journal.csv
           if git diff --cached --quiet; then
             echo "Nothing new to save."

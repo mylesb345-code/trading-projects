@@ -58,5 +58,43 @@ class ConsensusTests(unittest.TestCase):
         self.assertEqual([p["conditionId"] for p in kept], ["a"])
 
 
+class RankTests(unittest.TestCase):
+    def test_hidden_losers_change_the_verdict(self):
+        import rank
+        now = 100 * rank.DAY
+        wins = [{"t": now - i * rank.DAY // 2, "pnl": 100, "cost": 500, "entry": 0.5, "title": "A vs B"} for i in range(60)]
+        losers = [{"t": now - i * rank.DAY, "pnl": -500, "cost": 500, "entry": 0.5, "title": "A vs B"} for i in range(40)]
+        self.assertEqual(rank.verdict(rank.score(wins, now)), "PASS")
+        s = rank.score(wins + losers, now)
+        self.assertAlmostEqual(s["win_rate"], 0.6)
+        self.assertIn("profit factor 0.30", rank.verdict(s))
+
+    def test_favourite_buyers_are_flagged(self):
+        import rank
+        now = 100 * rank.DAY
+        bets = [{"t": now - i * rank.DAY // 2, "pnl": 30 if i % 20 else -300, "cost": 900, "entry": 0.95, "title": "x"}
+                for i in range(60)]
+        self.assertIn("buys favourites", rank.verdict(rank.score(bets, now)))
+
+
+class CopyAlertTests(unittest.TestCase):
+    def test_first_run_starts_fresh_then_alerts_big_new_bets_only(self):
+        import copy_alerts
+        trader = {"name": "pro", "wallet": "0xabc", "avg_bet": 2000, "bets": 300, "win_rate": 0.7, "profit_factor": 2.0}
+        buys = [{"conditionId": "c1", "outcome": "Heat", "title": "Heat vs. Hornets", "eventSlug": "x", "usdcSize": 700,
+                 "size": 1250, "timestamp": 150, "side": "BUY"},
+                {"conditionId": "c1", "outcome": "Heat", "title": "Heat vs. Hornets", "eventSlug": "x", "usdcSize": 500,
+                 "size": 900, "timestamp": 160, "side": "BUY"},
+                {"conditionId": "c2", "outcome": "Over", "title": "O/U", "eventSlug": "y", "usdcSize": 300,
+                 "size": 600, "timestamp": 170, "side": "BUY"}]
+        sent, state = [], {}
+        copy_alerts.check([trader], state, lambda *a: sent.append(a), 100, fetch=lambda w, s: buys)
+        self.assertEqual((sent, state), ([], {"0xabc": 100}))
+        copy_alerts.check([trader], state, lambda *a: sent.append(a), 200, fetch=lambda w, s: buys)
+        self.assertEqual([s[0] for s in sent], ["Copy alert: pro bought Heat"])  # $1,200 >= half of $2,000; $300 isn't
+        self.assertIn("$1,200 on Heat at 56c", sent[0][1])
+        self.assertEqual(state["0xabc"], 170)
+
+
 if __name__ == "__main__":
     unittest.main()

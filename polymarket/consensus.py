@@ -31,15 +31,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 def get(path, **params):
     url = f"{API}{path}?{urllib.parse.urlencode(params)}"
-    for attempt in range(3):
+    for attempt in range(6):
         try:
             req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "whale-consensus/1.0"})
             with urllib.request.urlopen(req, timeout=30) as r:
                 return json.loads(r.read().decode())
-        except Exception:
-            if attempt == 2:
+        except Exception as e:
+            if attempt == 5:
                 raise
-            time.sleep(2 * (attempt + 1))
+            # Polymarket rate-limits bursts (HTTP 429): back off harder for those
+            time.sleep((8 if "429" in str(e) else 2) * (attempt + 1))
 
 
 def leaderboard(period, depth=200):
