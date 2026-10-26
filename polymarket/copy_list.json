@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25 02:18 UTC",
+ "generated": "2026-10-26 06:10 UTC",
  "rules": {
   "min_bets": 40,
   "min_win_rate": 0.55,
@@ -9,48 +9,5 @@
   "max_avg_entry": 0.85,
   "window_days": 90
  },
- "traders": [
-  {
-   "name": "tetrase",
-   "wallet": "0xdf17f4a8dd01a4cfa6fc3da323a2baee5f8697d1",
-   "pnl_all": 966241.804073,
-   "pnl_30d": 99992.08984030057,
-   "pnl_90d": 249581.0828000002,
-   "bets": 348,
-   "win_rate": 0.7183908045977011,
-   "profit_factor": 2.3199899175378573,
-   "weeks_profitable": 0.8666666666666667,
-   "avg_entry": 0.68084919313769,
-   "avg_bet": 44884.996143468365,
-   "sports_share": 0.028735632183908046
-  },
-  {
-   "name": "UpTheBlues",
-   "wallet": "0x2a69660046d7acc4ab204d7cc5ba78b0776cd2f7",
-   "pnl_all": 1107133.153376,
-   "pnl_30d": 1705106.2902898872,
-   "pnl_90d": 363283.3097999998,
-   "bets": 1247,
-   "win_rate": 0.7441860465116279,
-   "profit_factor": 1.7244186282495622,
-   "weeks_profitable": 1.0,
-   "avg_entry": 0.6433097443932655,
-   "avg_bet": 1656.2265337238741,
-   "sports_share": 0.9198075380914194
-  },
-  {
-   "name": "Kch-Temp",
-   "wallet": "0x924379a79c64b77ad5816ad362122a5f6228658e",
-   "pnl_all": 3153484.9510000004,
-   "pnl_30d": 1199454.3915706107,
-   "pnl_90d": 2385962.8415999985,
-   "bets": 220,
-   "win_rate": 0.5590909090909091,
-   "profit_factor": 1.701481579908974,
-   "weeks_profitable": 0.7692307692307693,
-   "avg_entry": 0.5229292420844879,
-   "avg_bet": 43957.89408196414,
-   "sports_share": 0.9863636363636363
-  }
- ]
+ "traders": []
 }
