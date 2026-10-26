@@ -1,402 +1,402 @@
 {
  "breakout_20_10|1d|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|CL=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|ES=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|GC=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|NQ=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|SI=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|1d|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "breakout_20_10|6h|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|CL=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|ES=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|ETH-USD": {
   "fail": 0,
-  "pass": 4
+  "pass": 5
  },
  "momentum_90|1d|GC=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|NQ=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|SI=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|1d|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "momentum_90|6h|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|CL=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|ES=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|GC=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|NQ=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|SI=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|1d|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "rsi2_dip|6h|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|AVAX-USD": {
   "fail": 0,
-  "pass": 4
+  "pass": 5
  },
  "trend_ema50_200|1d|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|BTC-USD": {
   "fail": 0,
-  "pass": 4
+  "pass": 5
  },
  "trend_ema50_200|1d|CL=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|ES=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|GC=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|NQ=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|SI=F": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|1d|XRP-USD": {
   "fail": 0,
-  "pass": 4
+  "pass": 5
  },
  "trend_ema50_200|6h|ADA-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|AVAX-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|BCH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|BTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|DOGE-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|ETH-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|LINK-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|LTC-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|SOL-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  },
  "trend_ema50_200|6h|XRP-USD": {
-  "fail": 4,
+  "fail": 5,
   "pass": 0
  }
 }
