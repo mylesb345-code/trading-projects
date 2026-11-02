@@ -1,0 +1,39 @@
+STRATEGY LAB: 2017-01-03 to 2026-11-02 (~9.8 years), signals on the close, trades at the next open, costs included.
+PASS = beats SPY per year overall and in both halves, worst drop no deeper than SPY's (-33.8%); stock strategies must also beat the equal-weight control.
+SAFER = less return than SPY but better Sharpe and a worst drop at least a third smaller.
+
+strategy                               per year worst drop Sharpe  2017-21 2022-now since Apr 24  verdict
+Trend: 2x Nasdaq (QLD) 200-day           +27.9%     -42.2%   0.89   +38.5%   +17.3%       +75.2%  fail
+Hold Nasdaq-100 (QQQ)                    +20.3%     -35.0%   0.93   +28.2%   +12.5%       +60.9%  fail
+Trend: QQQ 200-day avg                   +16.7%     -23.2%   0.99   +20.9%   +12.4%       +47.7%  PASS
+Trend: 2x S&P (SSO) 200-day              +16.5%     -36.2%   0.76   +21.9%   +10.9%       +66.4%  fail
+Hold S&P 500 (SPY)                       +14.8%     -33.8%   0.87   +18.1%   +11.4%       +52.7%  benchmark
+Stocks: momentum 12-1                    +13.0%     -39.5%   0.56    +5.0%   +21.8%       +86.5%  fail
+Stocks: all, equal weight (control)      +11.9%     -39.8%   0.70   +15.4%    +8.4%       +39.7%  benchmark
+Stocks: short-term reversal              +11.0%     -67.8%   0.49   +14.6%    +7.1%       +13.4%  fail
+Sector momentum, top 3                   +10.7%     -33.2%   0.65   +14.4%    +6.9%       +18.0%  fail
+Trend: SPY 200-day avg                   +10.6%     -19.5%   0.90   +12.5%    +8.6%       +41.0%  SAFER
+60/40 stocks/bonds                        +9.7%     -21.6%   0.89   +12.5%    +6.9%       +35.1%  SAFER
+Nasdaq covered calls (QYLD)               +9.5%     -24.7%   0.66   +11.0%    +7.8%       +38.5%  fail
+Stocks: low volatility                    +9.0%     -33.1%   0.64   +13.3%    +4.8%       +28.4%  fail
+Trend: SPY 10-month avg (Faber)           +8.3%     -24.9%   0.70   +12.1%    +4.5%       +32.3%  fail
+Covered calls (XYLD)                      +8.3%     -33.5%   0.63    +9.5%    +7.0%       +35.8%  fail
+Dual momentum (Antonacci)                 +7.9%     -33.8%   0.55    +9.6%    +6.0%       +42.0%  fail
+Global trend (Faber Ivy 5)                +6.5%     -10.5%   0.93    +7.2%    +5.8%       +32.7%  SAFER
+Stocks: 52-week high                      +5.1%     -29.5%   0.39   +11.1%    -0.4%        +7.4%  fail
+RSI(2) dip-buying (Connors)               +4.2%     -12.9%   0.70    +2.6%    +5.9%       +27.4%  fail
+Stocks: momentum + market filter          +3.6%     -33.5%   0.27    +2.3%    +4.8%       +35.6%  fail
+Turn of the month                         +3.3%     -10.9%   0.49    +3.3%    +3.2%       +15.0%  fail
+Overnight SPY                             -5.3%     -44.8%  -0.41    -1.9%    -8.6%        -5.3%  fail
+
+CRYPTO, 2021-07-20 to 2026-11-02 (0.35% cost per side, idle money in cash)
+strategy                               per year worst drop Sharpe
+Crypto: hold BTC                         +19.7%     -76.8%   0.60
+Crypto: BTC 200-day avg                  +13.2%     -37.1%   0.52
+Crypto: BTC 50-day avg                   +18.2%     -61.4%   0.65
+Crypto: hold ETH                          +4.4%     -79.4%   0.41
+Crypto: ETH 50-day avg                   +24.9%     -57.9%   0.71
+(SPY over the same dates)                +12.7%     -24.5%   0.80
+
+Stock strategies pick only from that date's S&P 500 members (749 stocks with price data); a few removed companies have no data, so stock results may still be slightly high.
+Past results with simulated fills; not a promise and not financial advice.

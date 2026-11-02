@@ -1,0 +1,37 @@
+1999-2016: NEW DATA (dot-com crash, 2008)
+strategy                               per year worst drop Sharpe
+Hold S&P 500 (SPY)                        +4.5%     -55.2%   0.32
+Hold Nasdaq-100 (QQQ)                     +2.0%     -83.0%   0.21
+QQQ 150-day trend                         +1.8%     -66.5%   0.19
+QQQ 200-day trend  <- the rule            +3.4%     -50.6%   0.28
+QQQ 250-day trend                         +4.1%     -38.3%   0.33
+SPY 200-day trend                         +4.1%     -24.3%   0.42
+2x S&P, 200-day trend (simulated)         +4.6%     -46.5%   0.31
+2x Nasdaq, 200-day trend (simulated)      +1.4%     -80.7%   0.21
+2x Nasdaq, always held (simulated)        -6.9%     -98.8%   0.16
+
+2017-now: the lab's period
+strategy                               per year worst drop Sharpe
+Hold S&P 500 (SPY)                       +14.9%     -33.7%   0.86
+Hold Nasdaq-100 (QQQ)                    +20.3%     -35.1%   0.93
+QQQ 150-day trend                        +19.0%     -23.4%   1.12
+QQQ 200-day trend  <- the rule           +16.9%     -23.1%   1.00
+QQQ 250-day trend                        +16.3%     -28.4%   0.96
+SPY 200-day trend                        +11.1%     -19.4%   0.93
+2x S&P, 200-day trend (simulated)        +17.7%     -35.8%   0.80
+2x Nasdaq, 200-day trend (simulated)     +28.3%     -42.5%   0.90
+2x Nasdaq, always held (simulated)       +32.7%     -63.3%   0.85
+
+2000-now: everything
+strategy                               per year worst drop Sharpe
+Hold S&P 500 (SPY)                        +8.2%     -55.2%   0.51
+Hold Nasdaq-100 (QQQ)                     +8.4%     -83.0%   0.43
+QQQ 150-day trend                         +7.8%     -66.5%   0.54
+QQQ 200-day trend  <- the rule            +8.2%     -50.6%   0.55
+QQQ 250-day trend                         +8.5%     -38.3%   0.57
+SPY 200-day trend                         +6.6%     -24.3%   0.62
+2x S&P, 200-day trend (simulated)         +9.3%     -46.5%   0.50
+2x Nasdaq, 200-day trend (simulated)     +10.6%     -80.7%   0.47
+2x Nasdaq, always held (simulated)        +6.1%     -98.8%   0.38
+
+Signals on the close, trades at the next open, 0.03% per side, idle money at the T-bill rate. Not financial advice.

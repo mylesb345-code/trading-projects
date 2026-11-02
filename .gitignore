@@ -18,3 +18,4 @@ stock-bot/.venv/
 stock-bot/state.json
 stock-bot/trades.csv
 insider-bot/cache/
+strategy-lab/cache/
