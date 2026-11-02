@@ -56,7 +56,7 @@ def main(argv=None) -> int:
         return 0
     if a.cmd == "report":
         import report
-        title, body = report.build(scanner.trading, scanner.store.bot_symbols())
+        title, body = report.build(scanner.trading, scanner.store.bot_symbols(), md=scanner.md)
         scanner.alerts.send(title, body)
         return 0
     if a.cmd == "scan":
