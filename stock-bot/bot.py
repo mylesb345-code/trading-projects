@@ -76,6 +76,12 @@ class AlpacaPaper:
             sys.exit("REFUSING: that key ID doesn't start with PK, so it isn't an Alpaca paper key. Use paper keys.")
         from alpaca.trading.client import TradingClient
         self.client = TradingClient(key, secret, paper=True)
+        try:  # check the keys on every run, not just when a trade finally comes along
+            acct = self.client.get_account()
+        except Exception as e:
+            sys.exit(f"Alpaca rejected the keys ({e}). Regenerate your PAPER keys and update .env (and the GitHub secrets).")
+        if not str(acct.account_number).startswith("PA"):
+            sys.exit(f"REFUSING: account {acct.account_number} isn't an Alpaca paper account.")
 
     def shares_held(self, symbol):
         try:
