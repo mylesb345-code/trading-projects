@@ -1,0 +1,47 @@
+# Runs the moving-average crossover bot (stock-bot/bot.py) every weekday after the US market closes.
+# PAPER ONLY: the bot is hard-wired to Alpaca's paper API and refuses non-paper keys.
+# Needs two repository secrets: ALPACA_API_KEY and ALPACA_SECRET_KEY (Settings > Secrets and variables > Actions).
+name: stock-bot
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"  # 21:30 UTC Mon-Fri = 4:30 PM New York in winter, 5:30 PM in summer
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot  # never at the same time as the other jobs, so their saves can't clash
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install packages
+        run: python3 -m pip install --quiet -r stock-bot/requirements.txt
+
+      - name: Check for a crossover and trade (paper)
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python3 stock-bot/bot.py
+
+      - name: Save the bot's memory and trade log
+        if: always()
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f stock-bot/trades.csv
+          [ -f stock-bot/state.json ] && git add -f stock-bot/state.json
+          if git diff --cached --quiet; then
+            echo "Nothing new to save."
+          else
+            git commit -m "Stock bot run $(date -u '+%Y-%m-%d')"
+            git pull --rebase
+            git push
+          fi

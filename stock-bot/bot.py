@@ -106,6 +106,20 @@ def decide(signal, info, cfg, state, broker):
     return "SELL", min(cfg["trade_qty"], held), "20-day average crossed below the 50-day"
 
 
+def notify(title, body):
+    """Phone alert on the same ntfy channel as the swing bot (trading-bot/config.json). Silent if there isn't one."""
+    import urllib.request
+    try:
+        with open(os.path.join(HERE, "..", "trading-bot", "config.json")) as f:
+            topic = json.load(f).get("ntfy_topic")
+        if topic:
+            req = urllib.request.Request(f"https://ntfy.sh/{topic}", data=body.encode(), method="POST",
+                                         headers={"Title": title, "Priority": "high"})
+            urllib.request.urlopen(req, timeout=20).close()
+    except Exception as e:
+        print(f"(phone alert failed: {e})", file=sys.stderr)
+
+
 def log(row):
     new = not os.path.exists(LOG_PATH)
     with open(LOG_PATH, "a", newline="") as f:
@@ -137,6 +151,10 @@ def main(argv=None):
         with open(STATE_PATH, "w") as f:
             json.dump(state, f)
         print(f"PAPER order placed: {action} {qty:g} {cfg['symbol']} at market | id {order_id} | status {status}")
+        notify(f"PAPER {action} {qty:g} {cfg['symbol']}",
+               f"{reason}.\n{cfg['symbol']} closed ${info['close']:.2f} on {info['date']}. "
+               f"{cfg['fast_ma']}-day ${info['fast']:.2f} vs {cfg['slow_ma']}-day ${info['slow']:.2f}.\n"
+               f"Market order on your Alpaca paper account ({status}); it fills at the next open if the market is closed.")
     log({"run_at": datetime.now(NEW_YORK).strftime("%Y-%m-%d %H:%M %Z"), "symbol": cfg["symbol"], **info,
          "action": action + (" (dry run)" if a.dry and action in ("BUY", "SELL") else ""), "qty": qty,
          "reason": reason, "order_id": order_id, "status": status})
