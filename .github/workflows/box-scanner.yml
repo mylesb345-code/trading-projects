@@ -5,9 +5,7 @@
 name: box-scanner
 
 on:
-  schedule:
-    - cron: "40 13,14 * * 1-5"  # 13:40 and 14:40 UTC: one of them is 9:40 AM New York (summer or winter time);
-                                 # runs while the market is closed do nothing, and repeats never double an order
+  # schedule removed 2026-11-02: day trading only (orb-bot/); the box scanner's last positions were sold
   workflow_dispatch:
 
 permissions:
