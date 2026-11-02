@@ -1,0 +1,12 @@
+DAY-TRADING LAB: 2016-02-03 to 2026-11-02, 5-minute bars, flat every night, $0.0045/share per side.
+
+strategy                                     per year worst drop Sharpe  2016-20 2021-now since published  verdict
+Hold SPY                                       +13.6%     -34.2%   0.81   +14.6%   +13.0%                  benchmark
+Hold QQQ                                       +19.4%     -35.6%   0.91   +25.8%   +14.5%                  benchmark
+ORB on QQQ, up to 4x (as published)            +18.7%     -27.9%   0.75   +23.2%   +14.1% +12.3% vs +18.5%  PASS
+ORB on QQQ, 1x                                  +5.5%     -12.7%   0.61    +6.4%    +4.4% +3.1% vs +18.5%  fail
+Noise-area on SPY, up to 4x (as published)      +6.7%     -30.7%   0.56    +3.3%    +9.2% -5.0% vs +17.7%  fail
+Noise-area on SPY, 1x                           +5.7%      -9.1%   0.93    +4.4%    +6.7% -0.4% vs +17.7%  fail
+
+'since published' = per year after the paper came out (ORB May 2023, noise-area May 2024), vs holding SPY over the same months.
+Hold rows are price only (no dividends, about 1.3%/yr for SPY). Past results with simulated fills; not a promise and not financial advice.
