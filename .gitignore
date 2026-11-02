@@ -14,3 +14,6 @@ __pycache__/
 .DS_Store
 polymarket/consensus.html
 polymarket/consensus.csv
+stock-bot/.venv/
+stock-bot/state.json
+stock-bot/trades.csv

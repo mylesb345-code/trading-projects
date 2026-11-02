@@ -1,0 +1,7 @@
+{
+  "symbol": "AAPL",
+  "fast_ma": 20,
+  "slow_ma": 50,
+  "trade_qty": 1,
+  "history_days": 100
+}
