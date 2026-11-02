@@ -16,8 +16,12 @@ import csv
 import json
 import os
 import sys
+import warnings
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+
+# macOS's built-in Python uses LibreSSL, which makes urllib3 print a harmless warning on every run
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(HERE, "config.json")
