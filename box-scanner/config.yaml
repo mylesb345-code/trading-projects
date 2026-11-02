@@ -1,0 +1,95 @@
+# Box-theory swing scanner. Every setting lives here. Secrets (API keys, webhooks) live in .env, never here.
+# Fractions are written as decimals: 0.03 = 3%.
+
+# What the bot does with signals:
+#   signals_only  (default) scan and alert only; never places an order
+#   paper_auto    also place orders on your Alpaca PAPER account (run backtest.py and review it first)
+mode: signals_only
+
+# Which box-theory setup to look for:
+#   darvas_breakout  (default) buy a breakout above a confirmed Darvas box, on rising volume, in an uptrend
+#   range_reversion  buy confirmed bounces off the bottom quarter of a long trading range; exit in the top quarter
+strategy: darvas_breakout
+
+# Bar sizes scanned for each asset class (Alpaca names: 1Day, 4Hour).
+timeframes:
+  stocks: ["1Day"]
+  crypto: ["1Day", "4Hour"]
+
+# Which symbols get scanned.
+universe:
+  stocks:
+    min_price: 5.0                 # skip stocks under $5
+    min_avg_dollar_volume: 10000000  # 20-day average of (close x volume) must be at least $10M
+    avg_volume_days: 20
+    exclude_otc: true              # only listed exchanges (NYSE, NASDAQ, AMEX, ARCA, BATS)
+    max_symbols: 0                 # 0 = no cap; set e.g. 500 to keep the first scan quick while testing
+  crypto:
+    quote_currency: USD            # all */USD pairs Alpaca trades
+    min_24h_dollar_volume: 1000000 # last 24 hours of (close x volume) must be at least $1M
+
+# Darvas box settings (darvas_breakout).
+box:
+  lookback_high: 50        # the box top must be the highest high of the last 50 bars
+  confirm_bars: 3          # top (and bottom) must hold for 3 bars after being set
+  min_box_bars: 5          # the box must have lasted at least 5 bars since its top
+  min_box_pct: 0.03        # box height (top - bottom) / bottom: at least 3% ...
+  max_box_pct:             # ... and at most this much (wider boxes are too loose)
+    stocks: 0.15
+    crypto: 0.25
+  breakout_buffer: 0.002   # the close must clear the top by 0.2% to count
+  volume_multiple: 1.5     # breakout bar volume must be at least 1.5x ...
+  volume_avg_bars: 20      # ... the average volume of the 20 bars before it
+  trend_filter: true       # only buy when close > SMA50 > SMA200
+  max_search_bars: 250     # how far back to look for the most recent box top
+
+# Trading-range settings (range_reversion).
+range:
+  range_lookback:          # the range = highest high and lowest low of this many bars before the signal bar
+    stocks: 252            # about one trading year of daily bars
+    crypto: 365
+  zone_pct: 0.25           # bottom zone = lowest 25% of the range, top zone = highest 25%; never trade the middle
+
+# Risk and position sizing (used by paper_auto, and to show suggested stops and targets in every alert).
+risk:
+  risk_per_trade: 0.01         # lose at most 1% of account equity if the stop is hit
+  max_position: 0.10           # no single position bigger than 10% of equity
+  max_open_positions: 10       # never hold more than 10 positions (open orders count too)
+  max_new_positions_per_scan: 3  # at most 3 new trades per scan; the best-ranked signals go first
+  daily_loss_limit: 0.03       # no new entries for the rest of the day once equity is down 3% from yesterday's close
+  target_multiple: 2.0         # Darvas target = box top + 2 x box height
+
+# Short selling. Only ever stocks, never crypto (Alpaca doesn't short crypto).
+allow_short: false
+
+# Where alerts go. Turn channels on here; put their URLs and tokens in .env.
+alerts:
+  console: true    # always printed and logged
+  discord: false   # needs DISCORD_WEBHOOK_URL
+  telegram: false  # needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+  email: false     # needs SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, ALERT_EMAIL_TO
+  ntfy: false      # free phone push (the app you already use); needs NTFY_TOPIC
+
+# Market data and local storage.
+data:
+  min_bars: 300               # bars kept per symbol (raised automatically to fit range_lookback + SMA200)
+  batch_size: 200             # symbols per stock data request
+  cache_db: cache/bars.sqlite # downloaded candles, so each scan only fetches new ones
+  state_db: state/scanner.sqlite  # signals (for de-duplication), order log, crypto stops and targets
+
+# Times (the process runs in UTC internally; alerts show UTC and US/Central).
+schedule:
+  heartbeat_minutes: 15
+  crypto_4h_minute: 2      # scan 2 minutes after each 4-hour candle closes (00:02, 04:02, ... UTC)
+  crypto_daily: "00:02"    # UTC, just after the daily crypto candle closes
+  stocks_after_close: "16:15"  # New York time, on Alpaca trading days only
+
+# Costs used by the backtest.
+backtest:
+  years: 2.5
+  slippage: 0.001          # 0.1% per side, every trade
+  crypto_fee: 0.0025       # Alpaca crypto taker fee, per side
+
+logging:
+  file: logs/scanner.log
+  level: INFO

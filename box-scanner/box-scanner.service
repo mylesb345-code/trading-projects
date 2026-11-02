@@ -1,0 +1,16 @@
+# systemd unit: runs the scanner 24/7 and restarts it if it stops. Edit User and the paths, then see README.md.
+[Unit]
+Description=Box-theory swing scanner (Alpaca paper)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trader
+WorkingDirectory=/home/trader/box-scanner
+ExecStart=/home/trader/box-scanner/.venv/bin/python main.py run
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

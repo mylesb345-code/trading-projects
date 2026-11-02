@@ -1,0 +1,7 @@
+.env
+.venv
+cache
+state
+logs
+backtest_results
+__pycache__
