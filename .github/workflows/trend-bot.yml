@@ -1,0 +1,46 @@
+# S&P 500 trend bot (trend-bot/): SPY while it's above its 200-day average, T-bills otherwise, on the Alpaca PAPER
+# account. Runs shortly after the open on trading days; runs while the market is closed do nothing, and a second run
+# the same morning finds nothing to trade. Its memory is saved back to trend-bot/state.json.
+name: trend-bot
+
+on:
+  schedule:
+    - cron: "45 13,14 * * 1-5"  # 13:45 and 14:45 UTC: one of them is 9:45 AM New York (summer or winter time)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot
+  cancel-in-progress: false
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install packages
+        run: python3 -m pip install --quiet -r box-scanner/requirements.txt
+
+      - name: Check the trend and trade (paper)
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python3 trend-bot/bot.py
+
+      - name: Save the bot's memory
+        if: always()
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          [ -f trend-bot/state.json ] && git add trend-bot/state.json
+          if git diff --cached --quiet; then
+            echo "Nothing new to save."
+          else
+            git commit -m "Trend bot run $(date -u '+%Y-%m-%d')"
+            git pull --rebase
+            git push
+          fi

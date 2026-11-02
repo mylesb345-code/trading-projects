@@ -58,7 +58,8 @@ risk:
   risk_per_trade: 0.01         # lose at most 1% of account equity if the stop is hit
   max_position: 0.10           # no single position bigger than 10% of equity
   max_open_positions: 10       # never hold more than 10 positions (open orders count too)
-  max_new_positions_per_scan: 3  # at most 3 new trades per scan; the best-ranked signals go first
+  max_new_positions_per_scan: 0  # RETIRED 2026-11-02: no new trades (it trailed the S&P 500 in strategy-lab/);
+                                 # open positions still exit on their stops/targets. trend-bot/ trades the account now.
   daily_loss_limit: 0.03       # no new entries for the rest of the day once equity is down 3% from yesterday's close
   target_multiple: 2.0         # Darvas target = box top + 2 x box height
   max_chase_pct: 0.03          # stocks: skip if the live price at the open is 3%+ beyond the signal close
@@ -74,7 +75,7 @@ alerts:
   telegram: false  # needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
   email: false     # needs SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, ALERT_EMAIL_TO
   ntfy: true       # free phone push (the app you already use); needs NTFY_TOPIC
-  max_signal_alerts: 5  # per scan, alert only the 5 best-ranked new signals (plus every order and exit); the rest
+  max_signal_alerts: 0  # per scan, alert only the 5 best-ranked new signals (plus every order and exit); the rest
                         # are still saved and logged
 
 # Market data and local storage.
