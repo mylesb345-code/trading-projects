@@ -6,6 +6,7 @@ comparison: a bar may be used only once its close time has passed.
 from __future__ import annotations
 
 import logging
+import socket
 import sqlite3
 import time
 from datetime import datetime, timedelta, timezone
@@ -15,6 +16,9 @@ from typing import Callable, Dict, Iterable, List, Optional, TypeVar
 import pandas as pd
 
 log = logging.getLogger("box.data")
+# alpaca-py sets no network timeout, so a dropped connection (e.g. the computer slept) can hang a scan forever.
+# With this, a dead connection errors after 60s and with_retries() tries again.
+socket.setdefaulttimeout(60)
 NEW_YORK = "America/New_York"
 TF_SECONDS = {"1Day": 86400, "4Hour": 14400}
 T = TypeVar("T")
@@ -126,16 +130,35 @@ class MarketData:
         return max(self.cfg["data"]["min_bars"], self.cfg["range"]["range_lookback"][asset_class] + 5, 260)
 
     def _fetch(self, symbols: List[str], asset_class: str, timeframe: str, start: datetime) -> Dict[str, pd.DataFrame]:
+        """Bars from `start` to now. Intraday crypto history comes in 60-day pieces: Alpaca answers a 30-day 4-hour
+        request in about a second but takes nearly a minute for 400 days, and far longer for years."""
+        if timeframe == "1Day":
+            return self._fetch_range(symbols, asset_class, timeframe, start, None)
+        pieces: List[Dict[str, pd.DataFrame]] = []
+        now = datetime.now(timezone.utc)
+        cursor = pd.Timestamp(start).to_pydatetime()
+        while cursor < now:
+            end = min(cursor + timedelta(days=60), now)
+            pieces.append(self._fetch_range(symbols, asset_class, timeframe, cursor, end))
+            cursor = end
+        out: Dict[str, pd.DataFrame] = {}
+        for piece in pieces:
+            for sym, df in piece.items():
+                out[sym] = pd.concat([out[sym], df]) if sym in out else df
+        return {s: df[~df.index.duplicated(keep="last")].sort_index() for s, df in out.items()}
+
+    def _fetch_range(self, symbols: List[str], asset_class: str, timeframe: str, start: datetime,
+                     end: Optional[datetime]) -> Dict[str, pd.DataFrame]:
         from alpaca.data.enums import Adjustment, DataFeed
         from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
         from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
         tf = TimeFrame.Day if timeframe == "1Day" else TimeFrame(4, TimeFrameUnit.Hour)
         if asset_class == "stocks":
-            req = StockBarsRequest(symbol_or_symbols=symbols, timeframe=tf, start=start, adjustment=Adjustment.ALL,
-                                   feed=DataFeed.SIP if self.feed == "sip" else DataFeed.IEX)
+            req = StockBarsRequest(symbol_or_symbols=symbols, timeframe=tf, start=start, end=end,
+                                   adjustment=Adjustment.ALL, feed=DataFeed.SIP if self.feed == "sip" else DataFeed.IEX)
             resp = with_retries(self.stocks.get_stock_bars, req, what=f"stock bars ({len(symbols)} symbols)")
         else:
-            req = CryptoBarsRequest(symbol_or_symbols=symbols, timeframe=tf, start=start)
+            req = CryptoBarsRequest(symbol_or_symbols=symbols, timeframe=tf, start=start, end=end)
             resp = with_retries(self.crypto.get_crypto_bars, req, what=f"crypto bars ({len(symbols)} symbols)")
         raw = resp.df
         out: Dict[str, pd.DataFrame] = {}
