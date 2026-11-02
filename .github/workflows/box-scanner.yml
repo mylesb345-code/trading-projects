@@ -1,0 +1,57 @@
+# Box-theory scanner (box-scanner/): stock scan every weekday after the US close, on Alpaca trading days only.
+# PAPER ONLY. In paper_auto mode it places bracket orders on the paper account, which wait for the next open.
+# Uses the ALPACA_API_KEY / ALPACA_SECRET_KEY repository secrets; alerts go to the same ntfy channel as the
+# other bots. Its memory (signals already handled, order log) is saved back to box-scanner/state/.
+name: box-scanner
+
+on:
+  schedule:
+    - cron: "20 21 * * 1-5"  # 21:20 UTC Mon-Fri = 4:20 PM New York in winter, 5:20 PM in summer
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot  # never at the same time as the other jobs, so their saves can't clash
+  cancel-in-progress: false
+
+jobs:
+  stocks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Restore the candle cache
+        uses: actions/cache@v4
+        with:
+          path: box-scanner/cache
+          key: box-bars-${{ github.run_id }}
+          restore-keys: box-bars-
+
+      - name: Install packages
+        run: python3 -m pip install --quiet -r box-scanner/requirements.txt
+
+      - name: Scan stocks and trade (paper)
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_DATA_FEED: iex
+        run: |
+          export NTFY_TOPIC=$(python3 -c "import json; print(json.load(open('trading-bot/config.json'))['ntfy_topic'])")
+          cd box-scanner && python3 main.py scan stocks --trading-days-only
+
+      - name: Save the scanner's memory
+        if: always()
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          [ -f box-scanner/state/scanner.sqlite ] && git add -f box-scanner/state/scanner.sqlite
+          if git diff --cached --quiet; then
+            echo "Nothing new to save."
+          else
+            git commit -m "Box scanner run $(date -u '+%Y-%m-%d')"
+            git pull --rebase
+            git push
+          fi

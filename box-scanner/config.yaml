@@ -4,17 +4,17 @@
 # What the bot does with signals:
 #   signals_only  (default) scan and alert only; never places an order
 #   paper_auto    also place orders on your Alpaca PAPER account (run backtest.py and review it first)
-mode: signals_only
+mode: paper_auto
 
 # Which box-theory setup to look for:
 #   darvas_breakout  (default) buy a breakout above a confirmed Darvas box, on rising volume, in an uptrend
 #   range_reversion  buy confirmed bounces off the bottom quarter of a long trading range; exit in the top quarter
-strategy: darvas_breakout
+strategy: range_reversion   # chosen 2026-11-02 from the backtest: the most robust result (stocks)
 
 # Bar sizes scanned for each asset class (Alpaca names: 1Day, 4Hour).
 timeframes:
   stocks: ["1Day"]
-  crypto: ["1Day", "4Hour"]
+  crypto: []   # off for now: both strategies had very deep crypto drawdowns in the backtest. To scan crypto again: ["1Day", "4Hour"]
 
 # Which symbols get scanned.
 universe:
@@ -68,7 +68,7 @@ alerts:
   discord: false   # needs DISCORD_WEBHOOK_URL
   telegram: false  # needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
   email: false     # needs SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, ALERT_EMAIL_TO
-  ntfy: false      # free phone push (the app you already use); needs NTFY_TOPIC
+  ntfy: true       # free phone push (the app you already use); needs NTFY_TOPIC
 
 # Market data and local storage.
 data:

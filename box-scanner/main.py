@@ -21,6 +21,8 @@ def main(argv=None) -> int:
     sub.add_parser("check", help="verify keys, account, data and alerts")
     sc = sub.add_parser("scan", help="run one scan now")
     sc.add_argument("asset_class", choices=["stocks", "crypto"])
+    sc.add_argument("--trading-days-only", action="store_true",
+                    help="stocks: do nothing on weekends and market holidays (Alpaca calendar)")
     sub.add_parser("run", help="run 24/7 on the schedule")
     sub.add_parser("test-alert", help="send a test message to every enabled alert channel")
     a = ap.parse_args(argv)
@@ -49,6 +51,16 @@ def main(argv=None) -> int:
         log.info("alert channels on: %s", ", ".join(k for k, v in cfg["alerts"].items() if v) or "none")
         return 0
     if a.cmd == "scan":
+        if a.asset_class == "stocks" and a.trading_days_only:
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            today = datetime.now(ZoneInfo("America/New_York")).date()
+            if not scanner.is_trading_day(today):
+                log.info("%s isn't a trading day (Alpaca calendar): no stock scan", today)
+                return 0
+        if not scanner.cfg["timeframes"].get(a.asset_class):
+            log.info("%s scanning is switched off in config.yaml (timeframes.%s is empty)", a.asset_class, a.asset_class)
+            return 0
         signals = scanner.scan(a.asset_class)
         log.info("done: %d new entry signal(s)", len(signals))
         return 0
