@@ -75,7 +75,7 @@ alerts:
   telegram: false  # needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
   email: false     # needs SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, ALERT_EMAIL_TO
   ntfy: true       # free phone push (the app you already use); needs NTFY_TOPIC
-  max_signal_alerts: 0  # per scan, alert only the 5 best-ranked new signals (plus every order and exit); the rest
+  max_signal_alerts: 0  # retired: no buy-signal alerts (orders and exits still alert); was 5. The rest
                         # are still saved and logged
 
 # Market data and local storage.
