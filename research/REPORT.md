@@ -1,6 +1,6 @@
 # Strategy research report
 
-Run 2026-11-01 06:51 UTC. 15 markets, 4 rules, daily candles (6 years) and 6-hour candles (crypto, 3 years). Costs: 0.1% slippage per side + Trench's 8% fee on wins, x1. Fills at the next bar's open. Paper research, not financial advice.
+Run 2026-11-02 06:50 UTC. 15 markets, 4 rules, daily candles (6 years) and 6-hour candles (crypto, 3 years). Costs: 0.1% slippage per side + Trench's 8% fee on wins, x1. Fills at the next bar's open. Paper research, not financial advice.
 
 A pair passes with 15+ trades (5+ out-of-sample), profit factor > 1.3 in both the first 60% and the last 40% of history, and an out-of-sample return above buy-and-hold. It joins the live signals after passing 5 daily runs in a row and leaves after failing 5 in a row. A rule needs 3+ confirmed markets.
 
@@ -19,8 +19,8 @@ A pair passes with 15+ trades (5+ out-of-sample), profit factor > 1.3 in both th
 
 | Market (Trench) | Rule | TF | Trades | Win rate | PF in / out | Out-of-sample return vs hold | Max drawdown | Passed today |
 |---|---|---|---|---|---|---|---|---|
-| AVAX | trend_ema50_200 | 1d | 57 | 30% | 1.71 / 1.93 | +33% vs -80% | -57% | yes |
-| BTC | trend_ema50_200 | 1d | 73 | 27% | 3.57 / 1.94 | +37% vs +13% | -64% | yes |
+| AVAX | trend_ema50_200 | 1d | 57 | 30% | 1.71 / 1.93 | +50% vs -80% | -57% | yes |
+| BTC | trend_ema50_200 | 1d | 73 | 27% | 3.59 / 1.94 | +36% vs +11% | -64% | yes |
 | XRP | trend_ema50_200 | 1d | 47 | 15% | 1.42 / 1.83 | +26% vs -56% | -72% | yes |
 
 These are past results with simulated fills. Real fills, holding fees and gaps will differ. Many rule/market pairs were tested, so some passes can still be luck; that's why a rule needs 3+ markets and a 5-day streak.
