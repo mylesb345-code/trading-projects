@@ -4,8 +4,7 @@
 name: trend-bot
 
 on:
-  schedule:
-    - cron: "45 13,14 * * 1-5"  # 13:45 and 14:45 UTC: one of them is 9:45 AM New York (summer or winter time)
+  # schedule removed 2026-11-02 at the user's request: day trading only (orb-bot/); the SPY holding was sold
   workflow_dispatch:
 
 permissions:
