@@ -31,6 +31,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "box-scanner"))
 
 SYMBOL, RISK, MAX_LEV, TARGET_R = "QQQ", 0.01, 4.0, 10
+READY_TRADES, READY_MAX_DD = 60, 0.15  # real-money checks, fixed 2026-11-02 before the first trade
 ENTRY_AT, LAST_ENTRY, CLOSE_AT = time(9, 35, 10), time(10, 30), time(15, 55)
 NY = ZoneInfo("America/New_York")
 
@@ -185,6 +186,34 @@ def daily_pnl(trading, since: datetime) -> dict:
     return out
 
 
+def readiness(data, pnl: dict, equity: float) -> str:
+    """60+ trades, profitable, ahead of holding QQQ over the same days, worst drop under 15%."""
+    if not pnl:
+        return "Real-money check: no trades yet."
+    from alpaca.data.enums import DataFeed
+    from alpaca.data.requests import StockBarsRequest
+    from alpaca.data.timeframe import TimeFrame
+    days = sorted(pnl)
+    total = sum(pnl.values())
+    start_equity = equity - total
+    curve, peak, dd = start_equity, start_equity, 0.0
+    for d in days:
+        curve += pnl[d]
+        peak = max(peak, curve)
+        dd = min(dd, curve / peak - 1)
+    first = data.get_stock_bars(StockBarsRequest(symbol_or_symbols=SYMBOL, timeframe=TimeFrame.Day,
+                                                 start=datetime.combine(days[0], time(0), NY),
+                                                 end=datetime.combine(days[0], time(23), NY), feed=DataFeed.IEX)).df
+    qqq = last_price(data) / float(first["open"].iloc[0]) - 1 if first is not None and len(first) else 0.0
+    mine = total / start_equity
+    checks = [(len(days) >= READY_TRADES, f"trades {len(days)}/{READY_TRADES}"),
+              (total > 0 and mine > qqq, f"return {mine:+.1%} vs holding QQQ {qqq:+.1%}"),
+              (dd > -READY_MAX_DD, f"worst drop {dd:.1%} (limit -{READY_MAX_DD:.0%})")]
+    ok = all(c for c, _ in checks)
+    return ("Real-money check: " + ("READY on paper results; it also needs $25,000+ in a margin account. "
+                                     if ok else "not yet. ") + " | ".join(("OK " if c else "NO ") + t for c, t in checks))
+
+
 def close() -> int:
     trading, data = clients()
     t = now()
@@ -208,7 +237,11 @@ def close() -> int:
         head = f"PAPER ORB today: {'+' if today >= 0 else '-'}${abs(today):,.0f}"
         body = f"Today's QQQ day trade made {'+' if today >= 0 else '-'}${abs(today):,.0f}."
     body += (f" Since {days[0] if days else t.date()}: {len(days)} trading days, {wins} won, total "
-             f"{'+' if total >= 0 else '-'}${abs(total):,.0f}. Account ${equity:,.0f}.")
+             f"{'+' if total >= 0 else '-'}${abs(total):,.0f}. Account ${equity:,.0f}. ")
+    try:
+        body += readiness(data, pnl, equity)
+    except Exception as e:  # the day's result still goes out
+        print(f"readiness check failed: {type(e).__name__}: {e}")
     notify(head, body)
     return 0
 
