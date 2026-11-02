@@ -9,7 +9,7 @@ return with roughly half the worst drop (-24% vs -55% since 2000).
 Each run, while the market is open:
   1. Signal: yesterday's completed SPY close vs the average of the last 200 completed closes.
   2. Budget: account equity minus everything the bot doesn't own (e.g. the box scanner's last positions, your manual
-     trades), less a 2% cash cushion. Money freed when those positions close is picked up automatically.
+     trades; not the day-trading bot's QQQ), less a 2% cash cushion. Money freed when those positions close is picked up automatically.
   3. Sell the side the signal says not to hold, then buy the other side up to the budget. Top-ups smaller than 5% of
      the budget are skipped, so it doesn't trade every day. A second run on the same morning finds nothing to do.
 It messages your phone (ntfy) when it trades, and on Fridays with a short summary.
@@ -89,7 +89,8 @@ def main(dry: bool) -> int:
         return 0
     positions = {p.symbol: float(p.market_value) for p in client.get_all_positions()}
     equity = float(acct.equity)
-    others = sum(v for s, v in positions.items() if s not in (RISK_ON, RISK_OFF))
+    # QQQ belongs to the day-trading bot (orb-bot/), which is flat every night; leave it out of the budget
+    others = sum(v for s, v in positions.items() if s not in (RISK_ON, RISK_OFF, "QQQ"))
     budget = (equity - others) * (1 - CUSHION)
     trades = []
 

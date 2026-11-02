@@ -1,0 +1,45 @@
+# Opening-range breakout day trader (orb-bot/) on the Alpaca PAPER account: enters QQQ around 9:35 AM New York with a
+# bracket (stop + target) order and closes at 3:55 PM. Each pair of times covers summer and winter time; the run that
+# falls outside its New York window exits in seconds, and a repeat morning run finds today's order and does nothing.
+name: orb-bot
+
+on:
+  schedule:
+    - cron: "20 13,14 * * 1-5"  # morning: 9:20 AM New York (summer 13:20 UTC, winter 14:20 UTC)
+    - cron: "30 19,20 * * 1-5"  # close: 3:30 PM New York (summer 19:30 UTC, winter 20:30 UTC)
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "morning or close"
+        required: true
+        default: morning
+
+permissions:
+  contents: read
+
+concurrency:
+  group: orb-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install packages
+        run: python3 -m pip install --quiet -r box-scanner/requirements.txt
+
+      - name: Day trade (paper)
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          SCHEDULE: ${{ github.event.schedule }}
+          COMMAND: ${{ inputs.command }}
+        run: |
+          case "$SCHEDULE" in
+            "20 13,14 * * 1-5") COMMAND=morning ;;
+            "30 19,20 * * 1-5") COMMAND=close ;;
+          esac
+          python3 orb-bot/bot.py "$COMMAND"
