@@ -22,7 +22,9 @@ universe:
     min_price: 5.0                 # skip stocks under $5
     min_avg_dollar_volume: 10000000  # 20-day average of (close x volume) must be at least $10M
     avg_volume_days: 20
-    exclude_otc: true              # only listed exchanges (NYSE, NASDAQ, AMEX, ARCA, BATS)
+    exclude_otc: true              # only listed exchanges (NYSE, NASDAQ, AMEX, ARCA, BATS, TXSE)
+    exclude_leveraged_inverse_volatility: true  # skip 2x/3x, inverse/short and VIX/volatility funds (they decay
+                                   # over time and box rules weren't tested on them)
     max_symbols: 0                 # 0 = no cap; set e.g. 500 to keep the first scan quick while testing
   crypto:
     quote_currency: USD            # all */USD pairs Alpaca trades
@@ -49,6 +51,7 @@ range:
     stocks: 252            # about one trading year of daily bars
     crypto: 365
   zone_pct: 0.25           # bottom zone = lowest 25% of the range, top zone = highest 25%; never trade the middle
+  max_range_pct: 1.0       # ignore ranges taller than 100% (top/bottom - 1): those are crashes, splits or bad data
 
 # Risk and position sizing (used by paper_auto, and to show suggested stops and targets in every alert).
 risk:
@@ -69,6 +72,8 @@ alerts:
   telegram: false  # needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
   email: false     # needs SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, ALERT_EMAIL_TO
   ntfy: true       # free phone push (the app you already use); needs NTFY_TOPIC
+  max_signal_alerts: 5  # per scan, alert only the 5 best-ranked new signals (plus every order and exit); the rest
+                        # are still saved and logged
 
 # Market data and local storage.
 data:

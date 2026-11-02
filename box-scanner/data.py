@@ -6,6 +6,7 @@ comparison: a bar may be used only once its close time has passed.
 from __future__ import annotations
 
 import logging
+import re
 import socket
 import sqlite3
 import time
@@ -214,6 +215,18 @@ class MarketData:
 
 # ---------------------------------------------------------------- universes
 
+LEVERAGED_INVERSE_VOL = re.compile(r"(?i)\b(ultra\w*|short|inverse|bear|bull|leveraged|vix|volatility|-?[1-4]x)\b")
+
+
+def is_leveraged_inverse_or_volatility(name: str) -> bool:
+    """2x/3x, inverse/short and VIX/volatility products, judged by the fund's name
+    (e.g. "ProShares UltraPro Short QQQ", "Direxion Daily Semiconductor Bear 3X Shares", "... VIX Short-Term ETN")."""
+    return bool(LEVERAGED_INVERSE_VOL.search(name or ""))
+
+
+excluded_funds: set = set()  # filled by stock_universe(): funds the strategy must never hold
+
+
 def raw_assets(trading, asset_class: str) -> List[Dict]:
     """Active assets as plain dicts. Read raw on purpose: alpaca-py rejects the whole list whenever Alpaca adds
     something its models don't know yet (e.g. the new "TXSE" Texas Stock Exchange in 2026)."""
@@ -225,8 +238,12 @@ def stock_universe(trading, md: MarketData, cfg: Dict) -> List[str]:
     """Active, tradable, exchange-listed US stocks at $5+ with $10M+ average daily dollar volume."""
     u = cfg["universe"]["stocks"]
     assets = raw_assets(trading, "us_equity")
+    excluded_funds.clear()
+    excluded_funds.update(a["symbol"] for a in assets if is_leveraged_inverse_or_volatility(a.get("name", "")))
     listed = [a["symbol"] for a in assets if a.get("tradable") and "/" not in a["symbol"] and "." not in a["symbol"]
-              and (not u["exclude_otc"] or str(a.get("exchange", "")).upper() != "OTC")]
+              and (not u["exclude_otc"] or str(a.get("exchange", "")).upper() != "OTC")
+              and not (u.get("exclude_leveraged_inverse_volatility", True)
+                       and is_leveraged_inverse_or_volatility(a.get("name", "")))]
     log.info("stocks: %d active, tradable, listed", len(listed))
     n = u["avg_volume_days"]
     md.update(listed, "stocks", "1Day", n + 5)  # cheap first pass: just enough bars to check price and volume

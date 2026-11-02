@@ -117,3 +117,23 @@ class BacktestTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AutonomyRuleTests(unittest.TestCase):
+    def test_leveraged_inverse_volatility_funds_are_skipped(self):
+        from data import is_leveraged_inverse_or_volatility as bad
+        for name in ("iPath Series B S&P 500 VIX Short-Term Futures ETNs", "ProShares UltraPro Short QQQ",
+                     "Direxion Daily Semiconductor Bear 3X Shares", "ProShares Short S&P500",
+                     "Direxion Daily S&P 500 Bear 1X Shares", "ProShares UltraShort QQQ"):
+            self.assertTrue(bad(name), name)
+        for name in ("Apple Inc. Common Stock", "Fidelity National Information Services, Inc.",
+                     "Sprouts Farmers Market, Inc.", "iShares China Large-Cap ETF"):
+            self.assertFalse(bad(name), name)
+
+    def test_too_tall_ranges_are_ignored(self):
+        from strategies.box_theory import RangeParams, range_signals
+        from tests.test_box_theory import RangeTests
+        bars = RangeTests().series((115, 121, 110, 120, 1500.0))  # a 100-200 range is exactly +100%
+        meta = dict(META, strategy="range_reversion")
+        self.assertEqual(len(range_signals(bars, len(bars) - 1, RangeParams(252, 0.25, 1.0), meta)), 1)
+        self.assertEqual(range_signals(bars, len(bars) - 1, RangeParams(252, 0.25, 0.8), meta), [])

@@ -58,6 +58,12 @@ class Store:
                              json.dumps(response, default=str) if response is not None else None, error))
             self.db.commit()
 
+    def bot_symbols(self) -> set:
+        """Symbols the bot itself opened (a successful entry order in the log). Positions you open by hand never
+        appear here, so the bot never sells them."""
+        rows = self.db.execute("SELECT DISTINCT symbol FROM orders WHERE event LIKE 'entry%' AND error IS NULL")
+        return {r[0] for r in rows}
+
     def manage(self, symbol: str, qty: float, entry: float, stop: float, target: float, s: Signal) -> None:
         with self.lock:
             self.db.execute("INSERT OR REPLACE INTO managed VALUES (?,?,?,?,?,?,?,?,?)",

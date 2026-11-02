@@ -36,6 +36,7 @@ class BoxParams:
 class RangeParams:
     range_lookback: int = 252
     zone_pct: float = 0.25
+    max_range_pct: float = 1.0
 
 
 def params_for(cfg: Dict[str, Any], asset_class: str) -> "tuple[BoxParams, RangeParams]":
@@ -43,7 +44,7 @@ def params_for(cfg: Dict[str, Any], asset_class: str) -> "tuple[BoxParams, Range
     box = BoxParams(b["lookback_high"], b["confirm_bars"], b["min_box_bars"], b["min_box_pct"],
                     b["max_box_pct"][asset_class], b["breakout_buffer"], b["volume_multiple"], b["volume_avg_bars"],
                     b["trend_filter"], cfg["risk"]["target_multiple"], b.get("max_search_bars", 250))
-    return box, RangeParams(r["range_lookback"][asset_class], r["zone_pct"])
+    return box, RangeParams(r["range_lookback"][asset_class], r["zone_pct"], r.get("max_range_pct", 1.0))
 
 
 @dataclass
@@ -214,8 +215,8 @@ def range_signals(bars: Bars, i: int, p: RangeParams, meta: Dict[str, str], **_:
     if rb is None:
         return []
     hi, lo = rb
-    if hi <= lo:
-        return []
+    if hi <= lo or (hi - lo) / lo > p.max_range_pct:
+        return []  # no range, or one so tall it's a crash, a split or bad data rather than a trading range
     zone = (hi - lo) * p.zone_pct
     bottom_zone, top_zone = lo + zone, hi - zone
     o, h, l, c = bars.o[i], bars.h[i], bars.l[i], bars.c[i]

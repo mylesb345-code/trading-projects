@@ -7,7 +7,7 @@ from datetime import date, datetime, timezone
 from typing import Dict, List, Optional
 
 from alerts import Alerter
-from data import BarCache, MarketData, crypto_universe, stock_universe
+from data import BarCache, MarketData, crypto_universe, excluded_funds, stock_universe
 from risk import can_open, norm, position_size
 from settings import Credentials, path
 from store import Store
@@ -74,8 +74,12 @@ class Scanner:
         new_entries = [s for s in entries if self.store.add_signal(s)]
         log.info("%s: %d entry signals (%d new), %d exit/breakdown closes", asset_class, len(entries),
                  len(new_entries), len(exits))
-        for s in new_entries:
+        limit = self.cfg["alerts"].get("max_signal_alerts", 5)
+        for s in new_entries[:limit]:  # best-ranked only; the rest are saved and logged, not pushed
             self.alerts.signal(s, self.cfg["mode"])
+        if len(new_entries) > limit:
+            log.info("%d more signals saved but not alerted: %s", len(new_entries) - limit,
+                     ", ".join(s.symbol for s in new_entries[limit:]))
         self._follow_up_exits(exits)
         if self.broker:
             self._trade(asset_class, new_entries, exits, latest)
@@ -93,12 +97,20 @@ class Scanner:
     def _trade(self, asset_class: str, entries: List[Signal], exits: List[Signal], latest: Dict[str, Dict]) -> None:
         b, risk = self.broker, self.cfg["risk"]
         st = b.state()
-        held = {norm(h) for h in st.held}
-        # 1. exits for anything we hold
+        mine = {norm(x) for x in self.store.bot_symbols()}  # only ever manage what the bot opened
+        held = {norm(h) for h in st.held} & mine
+        # 1. exits for the bot's own positions
         for s in exits:
             if norm(s.symbol) in held:
                 b.close(s.symbol, f"{s.note} ({s.timeframe})")
                 self.store.unmanage(s.symbol)
+                held.discard(norm(s.symbol))
+        # 1b. sell anything the bot holds that its rules no longer allow (e.g. a leveraged or volatility fund)
+        if asset_class == "stocks" and self.cfg["universe"]["stocks"].get("exclude_leveraged_inverse_volatility", True):
+            for sym in sorted(h for h in st.held if norm(h) in held and h in excluded_funds):
+                if b.close(sym, "leveraged/inverse/volatility fund: outside the strategy's rules"):
+                    self.alerts.send(f"PAPER sold {sym}", f"{sym} is a leveraged, inverse or volatility fund, which the "
+                                     "strategy no longer trades, so the bot closed it at market.")
         # 2. crypto stops and targets, kept in code
         if asset_class == "crypto":
             for m in self.store.managed():
