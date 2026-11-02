@@ -214,15 +214,19 @@ class MarketData:
 
 # ---------------------------------------------------------------- universes
 
+def raw_assets(trading, asset_class: str) -> List[Dict]:
+    """Active assets as plain dicts. Read raw on purpose: alpaca-py rejects the whole list whenever Alpaca adds
+    something its models don't know yet (e.g. the new "TXSE" Texas Stock Exchange in 2026)."""
+    return with_retries(trading.get, "/assets", {"status": "active", "asset_class": asset_class},
+                        what=f"{asset_class} asset list")
+
+
 def stock_universe(trading, md: MarketData, cfg: Dict) -> List[str]:
     """Active, tradable, exchange-listed US stocks at $5+ with $10M+ average daily dollar volume."""
-    from alpaca.trading.enums import AssetClass, AssetStatus
-    from alpaca.trading.requests import GetAssetsRequest
     u = cfg["universe"]["stocks"]
-    assets = with_retries(trading.get_all_assets, GetAssetsRequest(status=AssetStatus.ACTIVE,
-                                                                   asset_class=AssetClass.US_EQUITY), what="asset list")
-    listed = [a.symbol for a in assets if a.tradable and "/" not in a.symbol and "." not in a.symbol
-              and (not u["exclude_otc"] or str(getattr(a.exchange, "value", a.exchange)).upper() != "OTC")]
+    assets = raw_assets(trading, "us_equity")
+    listed = [a["symbol"] for a in assets if a.get("tradable") and "/" not in a["symbol"] and "." not in a["symbol"]
+              and (not u["exclude_otc"] or str(a.get("exchange", "")).upper() != "OTC")]
     log.info("stocks: %d active, tradable, listed", len(listed))
     n = u["avg_volume_days"]
     md.update(listed, "stocks", "1Day", n + 5)  # cheap first pass: just enough bars to check price and volume
@@ -240,12 +244,9 @@ def stock_universe(trading, md: MarketData, cfg: Dict) -> List[str]:
 
 def crypto_universe(trading, md: MarketData, cfg: Dict) -> List[str]:
     """Every */USD pair Alpaca trades with at least $1M traded in the last 24 hours."""
-    from alpaca.trading.enums import AssetClass, AssetStatus
-    from alpaca.trading.requests import GetAssetsRequest
     u = cfg["universe"]["crypto"]
-    assets = with_retries(trading.get_all_assets, GetAssetsRequest(status=AssetStatus.ACTIVE,
-                                                                   asset_class=AssetClass.CRYPTO), what="crypto assets")
-    pairs = sorted(a.symbol for a in assets if a.tradable and a.symbol.endswith("/" + u["quote_currency"]))
+    assets = raw_assets(trading, "crypto")
+    pairs = sorted(a["symbol"] for a in assets if a.get("tradable") and a["symbol"].endswith("/" + u["quote_currency"]))
     keep = []
     for sym, df in md.closed_bars(pairs, "crypto", "4Hour", bars=6).items():  # last 24h = six 4-hour bars
         if (df["close"] * df["volume"]).sum() >= u["min_24h_dollar_volume"]:
