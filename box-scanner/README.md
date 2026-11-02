@@ -27,6 +27,7 @@ cp .env.example .env        # then paste your Alpaca PAPER keys into .env
 | `.venv/bin/python main.py scan crypto` | One crypto scan now (daily + 4-hour) |
 | `.venv/bin/python main.py scan stocks` | One stock scan now. The first run downloads history for ~1,500 stocks and takes a while; after that only new candles are fetched. |
 | `.venv/bin/python main.py run` | Run 24/7 on the schedule |
+| `.venv/bin/python main.py report` | Win/loss report for the paper account, also sent to your alert channels |
 | `.venv/bin/python backtest.py` | Backtest both strategies (~2.5 years, 50 stocks, 20 crypto pairs) |
 | `.venv/bin/python -m unittest discover -s tests -t .` | Run the tests |
 
@@ -36,7 +37,7 @@ cp .env.example .env        # then paste your Alpaca PAPER keys into .env
 |---|---|
 | Every 4 hours at :02 UTC (00:02, 04:02, …) | Crypto scan on 4-hour candles |
 | 00:02 UTC daily | Crypto scan on daily candles |
-| 4:15 PM New York, Mon–Fri | Stock scan, only on Alpaca trading days (holidays skipped). Stock orders queue for the next open. |
+| 9:40 AM New York, Mon–Fri | Stock scan on trading days (holidays skipped), after the opening rush. It reads yesterday's completed candles, re-checks each setup at the live price (skipping gaps through the stop or target, moves of 3%+ past the signal, and reward:risk under 1.5), then places orders. |
 | Every 15 minutes | Heartbeat line in the log |
 
 A crash on one symbol is logged and skipped. A crash in a whole scan is logged, and the process keeps running.
@@ -109,3 +110,10 @@ docker run -d --restart unless-stopped --env-file .env -v "$PWD/cache:/app/cache
 ## Before switching to paper_auto
 
 Run `backtest.py` and read `backtest_results/summary.txt`. Any test with fewer than 30 trades is flagged as too few to judge. Backtests model one position per symbol and include 0.1% slippage per side plus crypto fees. Real fills will differ. Not financial advice.
+
+## On GitHub (how it runs for you)
+
+- `.github/workflows/box-scanner.yml`: the stock scan and orders, 9:40 AM New York on trading days.
+- `.github/workflows/box-report.yml`: the win/loss report to your phone, weekdays after the close.
+
+It only manages positions it opened (logged in `state/scanner.sqlite`), never ones you opened by hand. It also sells anything it holds that its rules no longer allow, such as a leveraged, inverse or volatility fund.

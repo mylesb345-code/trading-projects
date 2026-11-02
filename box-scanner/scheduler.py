@@ -1,5 +1,6 @@
-"""The 24/7 schedule (APScheduler). Crypto: after every 4-hour close and the daily close. Stocks: after the US close
-on trading days. A heartbeat every 15 minutes. A crashing scan is logged and the process carries on."""
+"""The 24/7 schedule (APScheduler). Crypto: after every 4-hour close and the daily close. Stocks: 9:40 AM New York
+on trading days, after the opening rush. A heartbeat every 15 minutes. A crashing scan is logged and the process
+carries on."""
 from __future__ import annotations
 
 import logging
@@ -56,7 +57,7 @@ def build(scanner: Scanner, cfg: Dict) -> BlockingScheduler:
             return
         scanner.scan("stocks")
 
-    hh, mm = (int(x) for x in sch["stocks_after_close"].split(":"))
+    hh, mm = (int(x) for x in sch["stocks_scan_time"].split(":"))
     sched.add_job(safe("stock scan", stocks), CronTrigger(day_of_week="mon-fri", hour=hh, minute=mm,
                                                            timezone=NEW_YORK), name="stock scan")
     return sched

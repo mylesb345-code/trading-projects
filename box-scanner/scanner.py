@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 
 from alerts import Alerter
 from data import BarCache, MarketData, crypto_universe, excluded_funds, stock_universe
-from risk import can_open, norm, position_size
+from risk import can_open, entry_check, norm, position_size
 from settings import Credentials, path
 from store import Store
 from strategies.box_theory import Bars, Signal, evaluate, params_for, rank
@@ -137,7 +137,21 @@ class Scanner:
                 log.info("skip %s %s: %s", s.direction, s.symbol, why)
                 continue
             crypto = asset_class == "crypto"
-            qty = position_size(st.equity, s.close, s.stop, risk["risk_per_trade"], risk["max_position"],
+            entry = s.close
+            if not crypto:  # stocks trade after the open: re-check the setup at the live price first
+                try:
+                    entry = self.md.latest_price(s.symbol, asset_class)
+                except Exception as e:
+                    log.warning("skip %s: no live price (%s)", s.symbol, e)
+                    continue
+                ok, why, rr = entry_check(entry, s.direction, s.close, s.stop, s.target,
+                                          risk.get("max_chase_pct", 0.03), risk.get("min_reward_risk", 1.5))
+                if not ok:
+                    log.info("skip %s %s: %s", s.direction, s.symbol, why)
+                    continue
+                log.info("%s %s: live %.2f vs signal close %.2f, reward:risk %.2f", s.direction, s.symbol, entry,
+                         s.close, rr)
+            qty = position_size(st.equity, entry, s.stop, risk["risk_per_trade"], risk["max_position"],
                                 fractional=crypto, step=b.crypto_increment(s.symbol) if crypto else 1)
             if qty <= 0:
                 log.info("skip %s: position size rounds to zero", s.symbol)

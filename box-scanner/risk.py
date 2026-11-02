@@ -47,3 +47,31 @@ def can_open(state: AccountState, symbol: str, risk: Dict) -> Tuple[bool, str]:
     if state.open_count >= risk["max_open_positions"]:
         return False, f"already {state.open_count} positions/orders (max {risk['max_open_positions']})"
     return True, "ok"
+
+
+def entry_check(live: float, direction: str, signal_close: float, stop: float, target: float, max_chase: float,
+                min_reward_risk: float) -> Tuple[bool, str, float]:
+    """Is the setup still worth entering at the live price (after the open)? Returns (ok, reason, reward:risk).
+    Skips gaps through the stop or the target, prices that ran more than `max_chase` past the signal close, and
+    entries whose reward:risk at the live price is below `min_reward_risk`."""
+    if live <= 0:
+        return False, "no live price", 0.0
+    if direction == "long":
+        if live <= stop:
+            return False, f"opened at {live:.2f}, already below the stop {stop:.2f}", 0.0
+        if live >= target:
+            return False, f"opened at {live:.2f}, already past the target {target:.2f}", 0.0
+        if live > signal_close * (1 + max_chase):
+            return False, f"ran {live / signal_close - 1:.1%} above the signal close (max {max_chase:.0%})", 0.0
+        rr = (target - live) / (live - stop)
+    else:
+        if live >= stop:
+            return False, f"opened at {live:.2f}, already above the stop {stop:.2f}", 0.0
+        if live <= target:
+            return False, f"opened at {live:.2f}, already past the target {target:.2f}", 0.0
+        if live < signal_close * (1 - max_chase):
+            return False, f"fell {1 - live / signal_close:.1%} below the signal close (max {max_chase:.0%})", 0.0
+        rr = (live - target) / (stop - live)
+    if rr < min_reward_risk:
+        return False, f"reward:risk only {rr:.2f} at {live:.2f} (min {min_reward_risk})", rr
+    return True, "ok", rr

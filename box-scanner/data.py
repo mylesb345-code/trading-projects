@@ -198,6 +198,18 @@ class MarketData:
                 except Exception as e:
                     log.error("bars for %d %s symbols failed after retries: %s", len(chunk), asset_class, e)
 
+    def latest_price(self, symbol: str, asset_class: str) -> float:
+        """Last traded price right now (used to check a setup at the open before ordering)."""
+        if asset_class == "stocks":
+            from alpaca.data.enums import DataFeed
+            from alpaca.data.requests import StockLatestTradeRequest
+            req = StockLatestTradeRequest(symbol_or_symbols=symbol,
+                                          feed=DataFeed.SIP if self.feed == "sip" else DataFeed.IEX)
+            return float(with_retries(self.stocks.get_stock_latest_trade, req, what=f"{symbol} price")[symbol].price)
+        from alpaca.data.requests import CryptoLatestTradeRequest
+        req = CryptoLatestTradeRequest(symbol_or_symbols=symbol)
+        return float(with_retries(self.crypto.get_crypto_latest_trade, req, what=f"{symbol} price")[symbol].price)
+
     def closed_bars(self, symbols: List[str], asset_class: str, timeframe: str, bars: Optional[int] = None,
                     refresh: bool = True) -> Dict[str, pd.DataFrame]:
         """{symbol: DataFrame of CLOSED bars}, newest last."""

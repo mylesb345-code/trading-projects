@@ -1,0 +1,29 @@
+# Daily win/loss report for the Alpaca paper account (box-scanner/report.py), pushed to your phone after the close.
+name: box-report
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"  # 21:30 UTC Mon-Fri = 4:30 PM New York in winter, 5:30 PM in summer
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install packages
+        run: python3 -m pip install --quiet -r box-scanner/requirements.txt
+
+      - name: Build and send the report
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_DATA_FEED: iex
+        run: |
+          export NTFY_TOPIC=$(python3 -c "import json; print(json.load(open('trading-bot/config.json'))['ntfy_topic'])")
+          cd box-scanner && python3 main.py report

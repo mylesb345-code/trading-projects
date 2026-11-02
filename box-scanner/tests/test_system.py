@@ -137,3 +137,34 @@ class AutonomyRuleTests(unittest.TestCase):
         meta = dict(META, strategy="range_reversion")
         self.assertEqual(len(range_signals(bars, len(bars) - 1, RangeParams(252, 0.25, 1.0), meta)), 1)
         self.assertEqual(range_signals(bars, len(bars) - 1, RangeParams(252, 0.25, 0.8), meta), [])
+
+
+class EntryCheckAtOpenTests(unittest.TestCase):
+    def test_live_price_rules(self):
+        from risk import entry_check
+        args = dict(direction="long", signal_close=100.0, stop=90.0, target=130.0, max_chase=0.03, min_reward_risk=1.5)
+        self.assertTrue(entry_check(101.0, **args)[0])                     # normal open
+        self.assertIn("below the stop", entry_check(89.0, **args)[1])     # gapped through the stop
+        self.assertIn("past the target", entry_check(131.0, **args)[1])   # gapped through the target
+        self.assertIn("above the signal close", entry_check(104.0, **args)[1])  # chased 4%
+        ok, why, rr = entry_check(102.5, **dict(args, target=110.0))      # (110-102.5)/(102.5-90) = 0.6
+        self.assertFalse(ok)
+        self.assertIn("reward:risk", why)
+
+
+class ReportTests(unittest.TestCase):
+    def test_round_trips_from_fills(self):
+        from report import round_trips
+        fills = [
+            {"symbol": "FIS", "side": "buy", "qty": "148", "price": "39.62", "time": "2026-11-02T15:00"},
+            {"symbol": "VXX", "side": "buy", "qty": "355", "price": "18.36", "time": "2026-11-02T15:01"},
+            {"symbol": "VXX", "side": "sell", "qty": "355", "price": "18.30", "time": "2026-11-02T17:14"},
+            {"symbol": "AAPL", "side": "buy", "qty": "2", "price": "100", "time": "2026-11-03T15:00"},
+            {"symbol": "AAPL", "side": "sell", "qty": "1", "price": "110", "time": "2026-11-04T15:00"},
+            {"symbol": "AAPL", "side": "sell", "qty": "1", "price": "120", "time": "2026-11-05T15:00"},
+        ]
+        trips = {t.symbol: t for t in round_trips(fills)}
+        self.assertAlmostEqual(trips["VXX"].pnl, 355 * (18.30 - 18.36))    # a small loss
+        self.assertEqual(trips["VXX"].closed, "2026-11-02T17:14")
+        self.assertAlmostEqual(trips["AAPL"].pnl, 30.0)                    # +10 and +20 on two partial sells
+        self.assertIsNone(trips["FIS"].closed)                             # still open

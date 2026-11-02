@@ -1,12 +1,13 @@
-# Box-theory scanner (box-scanner/): stock scan every weekday after the US close, on Alpaca trading days only.
-# PAPER ONLY. In paper_auto mode it places bracket orders on the paper account, which wait for the next open.
+# Box-theory scanner (box-scanner/): stock scan at 9:40 AM New York on trading days, after the opening rush.
+# It reads yesterday's completed candles, re-checks each setup at the live price, then places PAPER bracket orders.
 # Uses the ALPACA_API_KEY / ALPACA_SECRET_KEY repository secrets; alerts go to the same ntfy channel as the
 # other bots. Its memory (signals already handled, order log) is saved back to box-scanner/state/.
 name: box-scanner
 
 on:
   schedule:
-    - cron: "20 21 * * 1-5"  # 21:20 UTC Mon-Fri = 4:20 PM New York in winter, 5:20 PM in summer
+    - cron: "40 13,14 * * 1-5"  # 13:40 and 14:40 UTC: one of them is 9:40 AM New York (summer or winter time);
+                                 # runs while the market is closed do nothing, and repeats never double an order
   workflow_dispatch:
 
 permissions:
@@ -40,7 +41,7 @@ jobs:
           ALPACA_DATA_FEED: iex
         run: |
           export NTFY_TOPIC=$(python3 -c "import json; print(json.load(open('trading-bot/config.json'))['ntfy_topic'])")
-          cd box-scanner && python3 main.py scan stocks --trading-days-only
+          cd box-scanner && python3 main.py scan stocks --trading-days-only --market-open-only
 
       - name: Save the scanner's memory
         if: always()

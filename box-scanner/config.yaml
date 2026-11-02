@@ -61,6 +61,8 @@ risk:
   max_new_positions_per_scan: 3  # at most 3 new trades per scan; the best-ranked signals go first
   daily_loss_limit: 0.03       # no new entries for the rest of the day once equity is down 3% from yesterday's close
   target_multiple: 2.0         # Darvas target = box top + 2 x box height
+  max_chase_pct: 0.03          # stocks: skip if the live price at the open is 3%+ beyond the signal close
+  min_reward_risk: 1.5         # stocks: skip if reward:risk at the live price is below 1.5
 
 # Short selling. Only ever stocks, never crypto (Alpaca doesn't short crypto).
 allow_short: false
@@ -87,7 +89,8 @@ schedule:
   heartbeat_minutes: 15
   crypto_4h_minute: 2      # scan 2 minutes after each 4-hour candle closes (00:02, 04:02, ... UTC)
   crypto_daily: "00:02"    # UTC, just after the daily crypto candle closes
-  stocks_after_close: "16:15"  # New York time, on Alpaca trading days only
+  stocks_scan_time: "09:40"    # New York time, trading days only: after the opening rush, using yesterday's
+                               # completed candle, with a live-price check before every order
 
 # Costs used by the backtest.
 backtest:
