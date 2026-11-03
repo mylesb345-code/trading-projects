@@ -1,0 +1,14 @@
+LIQUIDITY-VIDEO LAB: QQQ 5-minute bars incl. pre-market and after-hours, 2016-01-04 to 2026-11-02, $0.01/share per side.
+
+rule                                     per year worst drop Sharpe  2016-20 2021-now  verdict
+Hold SPY (price only)                      +13.0%     -34.2%   0.78   +13.2%   +13.0%  benchmark
+Sweep & reverse (session highs/lows)        -3.5%     -55.7%  -0.14    -5.0%    -2.1%  fail
+                                         2502 trades, won 34%, average -0.05R
+Sweep & reverse, no Fed days                -3.0%     -52.8%  -0.11    -4.7%    -1.3%  fail
+                                         2420 trades, won 34%, average -0.05R
+Fade the 1-hour candle after it closes     -13.4%     -79.3%  -2.13   -18.4%    -8.8%  fail
+                                         13528 trades, won 47%, average -1.1 basis points (t = -7.1)
+Fade the :45-:00 move                       -8.1%     -66.3%  -1.26   -12.3%    -4.2%  fail
+                                         13474 trades, won 48%, average -0.7 basis points (t = -4.2)
+
+Past results with simulated fills; not a promise and not financial advice.
