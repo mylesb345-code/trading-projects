@@ -11,6 +11,10 @@ Rules (as published):
     they work even if this script never runs again that day.
   - Size: 1% of equity at risk, at most 4x equity (and within the day-trading buying power).
   - Out by the close. Each morning also closes any QQQ left over if the afternoon run was missed.
+Calm-day filter (added 2026-11-04 from strategy-lab/minute.py, rules fixed before that test): no trade when the
+previous VIX close was 20 or higher, on Fed decision days, or on jobs-report days (first Friday). On 2016-2026 QQQ at
+4x this went from +20.8%/yr, worst drop -27.1%, Sharpe 0.81 to +18.5%/yr, -23.0%, 0.93 (SPY: +13.0%, -34.2%, 0.78).
+If the VIX can't be read, the day is traded (the unfiltered rule also beat SPY).
 GitHub's timer can start late, so a morning run enters until 10:30 if the stop hasn't been hit (logged as late);
 after that the day is skipped. Real-money note: daily day trading needs $25,000+ in a margin account (US
 pattern-day-trader rule).
@@ -34,6 +38,9 @@ SYMBOL, RISK, MAX_LEV, TARGET_R = "QQQ", 0.01, 4.0, 10
 READY_TRADES, READY_MAX_DD = 60, 0.15  # real-money checks, fixed 2026-11-02 before the first trade
 ENTRY_AT, LAST_ENTRY, CLOSE_AT = time(9, 35, 10), time(10, 30), time(15, 55)
 NY = ZoneInfo("America/New_York")
+CALM_VIX = 20.0
+FOMC = set("""2026-12-09 2027-01-27 2027-03-17 2027-04-28 2027-06-09 2027-07-28 2027-09-15 2027-10-27
+2027-12-08""".split())  # Fed decision days, federalreserve.gov/monetarypolicy/fomccalendars.htm; extend each year
 
 
 def now() -> datetime:
@@ -66,6 +73,26 @@ def clients():
     if not str(trading.get_account().account_number).startswith("PA"):
         raise SystemExit("not an Alpaca PAPER account (those start with PA); stopping")
     return trading, StockHistoricalDataClient(creds.api_key, creds.secret_key)
+
+
+def calm_day(day) -> str:
+    """Why today is skipped by the calm-day filter, or "" to trade."""
+    if str(day) in FOMC:
+        return "Fed decision day"
+    if day.weekday() == 4 and day.day <= 7:
+        return "jobs-report day"
+    try:
+        url = ("https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1mo")
+        r = json.loads(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}),
+                                              timeout=20).read())["chart"]["result"][0]
+        closes = [(datetime.fromtimestamp(t, NY).date(), c) for t, c in
+                  zip(r["timestamp"], r["indicators"]["quote"][0]["close"]) if c is not None]
+        prev = [c for d, c in closes if d < day][-1]
+    except Exception as e:
+        print(f"VIX unavailable ({type(e).__name__}); trading without the calm filter")
+        return ""
+    print(f"previous VIX close {prev:.2f}")
+    return f"VIX {prev:.1f} is {CALM_VIX:.0f} or higher (jumpy market)" if prev >= CALM_VIX else ""
 
 
 def first_candle(data, day) -> tuple:
@@ -127,6 +154,12 @@ def morning(dry: bool) -> int:
     if not dry and flatten(trading, "left over from yesterday"):
         notify("PAPER ORB: closed a leftover QQQ position", "Yesterday's afternoon run didn't happen, so the bot "
                "closed the position at this morning's open.")
+    skip = calm_day(day)
+    if skip:
+        print(f"no trade today: {skip}")
+        if not dry:
+            notify("PAPER ORB: sitting out today", f"No trade today: {skip}. The bot only trades calm days.")
+        return 0
     if not dry:
         wait_until(ENTRY_AT)
     o, h, l, c = first_candle(data, day)
@@ -232,7 +265,7 @@ def close() -> int:
     wins = sum(v > 0 for v in pnl.values())
     equity = float(trading.get_account().equity)
     if today is None:
-        head, body = "PAPER ORB: no trade today", "No QQQ trade today (flat opening candle, missed start, or stop already hit)."
+        head, body = "PAPER ORB: no trade today", "No QQQ trade today (calm-day filter, flat opening candle, missed start, or stop already hit)."
     else:
         head = f"PAPER ORB today: {'+' if today >= 0 else '-'}${abs(today):,.0f}"
         body = f"Today's QQQ day trade made {'+' if today >= 0 else '-'}${abs(today):,.0f}."

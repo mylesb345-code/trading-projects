@@ -1,0 +1,156 @@
+FOUR-SESSION OPENING-RANGE LAB (rules in sessions.py). Sessions in New York time.
+
+strategy                                                             from per year worst drop Sharpe  to 2020 2021-now  verdict
+Hold SPY (price only)                                          2015-12-31   +13.0%     -34.2%   0.78   +13.2%   +13.0%  benchmark
+QQQ ORB, Pre-open / Asia 4:00-7:00                                          -76.9%    -100.0% -12.46   -65.9%   -83.5%  fail
+                                                                 2141 trades, won 13%, average -73.6 bp of equity
+QQQ ORB, Pre-open / Asia 4:00-7:00 (no costs)                                +1.7%     -33.2%   0.22    +4.7%    -0.8%  fail
+                                                                 2141 trades, won 32%, average +1.2 bp of equity
+QQQ ORB, London 7:00-9:30                                                   -87.4%    -100.0% -20.58   -79.5%   -91.7%  fail
+                                                                 2287 trades, won 4%, average -97.5 bp of equity
+QQQ ORB, London 7:00-9:30 (no costs)                                        -31.8%     -98.6%  -4.57   -18.5%   -41.6%  fail
+                                                                 2287 trades, won 7%, average -18.0 bp of equity
+QQQ ORB, New York 9:30-16:00                                                +20.9%     -27.9%   0.81   +27.9%   +14.2%  PASS
+                                                                 2705 trades, won 24%, average +9.2 bp of equity
+QQQ ORB, New York 9:30-16:00 (no costs)                                     +25.1%     -27.1%   0.93   +34.7%   +16.3%  PASS
+                                                                 2705 trades, won 24%, average +10.5 bp of equity
+QQQ ORB, Late 16:00-20:00                                                   -85.8%    -100.0% -15.03   -87.1%   -84.7%  fail
+                                                                 2634 trades, won 10%, average -79.7 bp of equity
+QQQ ORB, Late 16:00-20:00 (no costs)                                         -7.1%     -64.7%  -0.52   -18.2%    +3.7%  fail
+                                                                 2634 trades, won 28%, average -2.7 bp of equity
+QQQ ORB, All 4 sessions                                                     -99.5%    -100.0% -14.93   -98.8%   -99.8%  fail
+                                                                 9767 trades, won 13%, average -57.9 bp of equity
+QQQ ORB, All 4 sessions (no costs)                                          -19.4%     -93.6%  -0.46    -6.0%   -30.1%  fail
+                                                                 9767 trades, won 23%, average -1.8 bp of equity
+Hold BTC                                                                    +61.1%     -83.4%   0.87  +131.9%   +17.8%  benchmark
+                                                                 buy and hold, for comparison
+BTC ORB, Pre-open session, spot: long only, 1x, 0.60% fee                   -88.7%    -100.0% -12.97   -86.6%   -90.3%  fail
+                                                                 1998 trades, won 4%, average -117.6 bp of equity
+BTC ORB, Pre-open session, spot, no fees                                     +3.5%     -28.8%   0.38    +8.6%    -0.9%  fail
+                                                                 1998 trades, won 20%, average +2.0 bp of equity
+BTC ORB, Pre-open session, futures: long/short 4x, 0.05%                    -68.5%    -100.0%  -3.21   -59.3%   -74.8%  fail
+                                                                 3806 trades, won 17%, average -31.7 bp of equity
+BTC ORB, Pre-open session, futures, no fees                                 +16.2%     -67.4%   0.55   +37.6%    +0.2%  fail
+                                                                 3806 trades, won 20%, average +5.4 bp of equity
+BTC ORB, London session, spot: long only, 1x, 0.60% fee                     -89.2%    -100.0% -13.71   -88.3%   -90.0%  fail
+                                                                 2003 trades, won 3%, average -119.7 bp of equity
+BTC ORB, London session, spot, no fees                                       -0.6%     -35.6%  -0.04    +4.7%    -4.9%  fail
+                                                                 2003 trades, won 18%, average -0.2 bp of equity
+BTC ORB, London session, futures: long/short 4x, 0.05%                      -72.2%    -100.0%  -3.65   -62.0%   -78.7%  fail
+                                                                 3847 trades, won 16%, average -34.9 bp of equity
+BTC ORB, London session, futures, no fees                                    +3.3%     -80.6%   0.21   +31.2%   -15.7%  fail
+                                                                 3847 trades, won 18%, average +2.0 bp of equity
+BTC ORB, New session, spot: long only, 1x, 0.60% fee                        -88.3%    -100.0% -11.50   -87.9%   -88.6%  fail
+                                                                 1946 trades, won 6%, average -118.5 bp of equity
+BTC ORB, New session, spot, no fees                                          +0.8%     -29.2%   0.10    +6.6%    -3.9%  fail
+                                                                 1946 trades, won 15%, average +0.7 bp of equity
+BTC ORB, New session, futures: long/short 4x, 0.05%                         -57.9%    -100.0%  -1.61   -46.2%   -66.0%  fail
+                                                                 3868 trades, won 15%, average -22.0 bp of equity
+BTC ORB, New session, futures, no fees                                      +45.3%     -46.4%   0.93   +90.5%   +14.9%  fail
+                                                                 3868 trades, won 16%, average +12.7 bp of equity
+BTC ORB, Late session, spot: long only, 1x, 0.60% fee                       -88.1%    -100.0% -12.60   -87.2%   -88.8%  fail
+                                                                 1948 trades, won 5%, average -117.5 bp of equity
+BTC ORB, Late session, spot, no fees                                         +2.9%     -28.2%   0.32    +9.1%    -2.1%  fail
+                                                                 1948 trades, won 19%, average +1.8 bp of equity
+BTC ORB, Late session, futures: long/short 4x, 0.05%                        -72.0%    -100.0%  -3.14   -63.1%   -78.0%  fail
+                                                                 3873 trades, won 16%, average -34.2 bp of equity
+BTC ORB, Late session, futures, no fees                                      +1.2%     -81.8%   0.16   +28.4%   -17.4%  fail
+                                                                 3873 trades, won 18%, average +1.7 bp of equity
+BTC ORB, All 4 session, spot: long only, 1x, 0.60% fee                     -100.0%    -100.0% -25.40  -100.0%  -100.0%  fail
+                                                                 7895 trades, won 4%, average -118.3 bp of equity
+BTC ORB, All 4 session, spot, no fees                                        +6.7%     -60.5%   0.39   +32.3%   -11.3%  fail
+                                                                 7895 trades, won 18%, average +1.1 bp of equity
+BTC ORB, All 4 session, futures: long/short 4x, 0.05%                       -99.0%    -100.0%  -5.46   -96.9%   -99.6%  fail
+                                                                 15394 trades, won 16%, average -30.7 bp of equity
+BTC ORB, All 4 session, futures, no fees                                    +76.5%     -93.1%   0.98  +341.5%   -19.9%  fail
+                                                                 15394 trades, won 18%, average +5.5 bp of equity
+
+Hold SPY (price only)                                          2016-05-18   +13.2%     -34.2%   0.79   +13.9%   +13.0%  benchmark
+Hold ETH                                                                    +63.5%     -93.9%   0.82  +139.3%   +21.2%  benchmark
+                                                                 buy and hold, for comparison
+ETH ORB, Pre-open session, spot: long only, 1x, 0.60% fee                   -87.9%    -100.0% -12.27   -84.7%   -89.9%  fail
+                                                                 1835 trades, won 5%, average -119.3 bp of equity
+ETH ORB, Pre-open session, spot, no fees                                     -0.7%     -33.1%  -0.03    -0.5%    -0.9%  fail
+                                                                 1835 trades, won 19%, average -0.2 bp of equity
+ETH ORB, Pre-open session, futures: long/short 4x, 0.05%                    -58.4%    -100.0%  -1.88   -44.4%   -67.1%  fail
+                                                                 3551 trades, won 19%, average -23.9 bp of equity
+ETH ORB, Pre-open session, futures, no fees                                 +35.9%     -34.1%   0.85   +52.6%   +23.2%  PASS
+                                                                 3551 trades, won 20%, average +10.9 bp of equity
+ETH ORB, London session, spot: long only, 1x, 0.60% fee                     -88.2%    -100.0% -11.71   -86.2%   -89.5%  fail
+                                                                 1860 trades, won 5%, average -119.1 bp of equity
+ETH ORB, London session, spot, no fees                                       -0.3%     -49.3%   0.01    +1.6%    -1.8%  fail
+                                                                 1860 trades, won 17%, average +0.1 bp of equity
+ETH ORB, London session, futures: long/short 4x, 0.05%                      -72.5%    -100.0%  -3.15   -60.5%   -79.3%  fail
+                                                                 3560 trades, won 16%, average -36.4 bp of equity
+ETH ORB, London session, futures, no fees                                    -9.7%     -91.7%  -0.13    +9.5%   -22.4%  fail
+                                                                 3560 trades, won 17%, average -1.5 bp of equity
+ETH ORB, New session, spot: long only, 1x, 0.60% fee                        -87.3%    -100.0%  -9.56   -85.5%   -88.6%  fail
+                                                                 1845 trades, won 8%, average -115.7 bp of equity
+ETH ORB, New session, spot, no fees                                          +4.2%     -20.1%   0.30    +9.4%    +0.3%  fail
+                                                                 1845 trades, won 16%, average +2.9 bp of equity
+ETH ORB, New session, futures: long/short 4x, 0.05%                         -45.2%     -99.8%  -0.90   -22.8%   -58.9%  fail
+                                                                 3600 trades, won 16%, average -14.5 bp of equity
+ETH ORB, New session, futures, no fees                                      +62.9%     -50.3%   1.06  +119.6%   +26.5%  fail
+                                                                 3600 trades, won 17%, average +17.1 bp of equity
+ETH ORB, Late session, spot: long only, 1x, 0.60% fee                       -86.9%    -100.0% -10.70   -85.4%   -88.0%  fail
+                                                                 1835 trades, won 7%, average -115.1 bp of equity
+ETH ORB, Late session, spot, no fees                                         +6.5%     -19.7%   0.51    +9.2%    +4.4%  fail
+                                                                 1835 trades, won 19%, average +3.9 bp of equity
+ETH ORB, Late session, futures: long/short 4x, 0.05%                        -61.3%    -100.0%  -1.85   -55.1%   -65.5%  fail
+                                                                 3605 trades, won 17%, average -25.4 bp of equity
+ETH ORB, Late session, futures, no fees                                     +22.6%     -56.4%   0.59   +28.3%   +18.5%  fail
+                                                                 3605 trades, won 18%, average +8.1 bp of equity
+ETH ORB, All 4 session, spot: long only, 1x, 0.60% fee                     -100.0%    -100.0% -21.36  -100.0%  -100.0%  fail
+                                                                 7375 trades, won 7%, average -117.3 bp of equity
+ETH ORB, All 4 session, spot, no fees                                        +9.9%     -51.5%   0.44   +20.6%    +1.8%  fail
+                                                                 7375 trades, won 18%, average +1.7 bp of equity
+ETH ORB, All 4 session, futures: long/short 4x, 0.05%                       -97.6%    -100.0%  -3.70   -92.4%   -99.0%  fail
+                                                                 14316 trades, won 17%, average -25.0 bp of equity
+ETH ORB, All 4 session, futures, no fees                                   +145.0%     -68.9%   1.27  +370.6%   +43.4%  fail
+                                                                 14316 trades, won 18%, average +8.7 bp of equity
+
+Hold SPY (price only)                                          2021-06-17   +11.4%     -25.4%   0.73        -   +11.4%  benchmark
+Hold SOL                                                                    +16.8%     -96.2%   0.54        -   +16.8%  benchmark
+                                                                 buy and hold, for comparison
+SOL ORB, Pre-open session, spot: long only, 1x, 0.60% fee                   -89.9%    -100.0% -12.65        -   -89.9%  fail
+                                                                 1005 trades, won 6%, average -121.5 bp of equity
+SOL ORB, Pre-open session, spot, no fees                                     -4.3%     -30.7%  -0.35        -    -4.3%  fail
+                                                                 1005 trades, won 18%, average -2.1 bp of equity
+SOL ORB, Pre-open session, futures: long/short 4x, 0.05%                    -73.3%     -99.9%  -2.81        -   -73.3%  fail
+                                                                 1893 trades, won 17%, average -35.6 bp of equity
+SOL ORB, Pre-open session, futures, no fees                                 -14.3%     -78.4%  -0.20        -   -14.3%  fail
+                                                                 1893 trades, won 18%, average -2.5 bp of equity
+SOL ORB, London session, spot: long only, 1x, 0.60% fee                     -87.1%    -100.0% -10.70        -   -87.1%  fail
+                                                                 917 trades, won 6%, average -119.2 bp of equity
+SOL ORB, London session, spot, no fees                                       -0.8%     -17.2%  -0.01        -    -0.8%  fail
+                                                                 917 trades, won 15%, average -0.1 bp of equity
+SOL ORB, London session, futures: long/short 4x, 0.05%                      -77.7%    -100.0%  -3.31        -   -77.7%  fail
+                                                                 1888 trades, won 15%, average -40.9 bp of equity
+SOL ORB, London session, futures, no fees                                   -27.9%     -85.8%  -0.61        -   -27.9%  fail
+                                                                 1888 trades, won 15%, average -7.5 bp of equity
+SOL ORB, New session, spot: long only, 1x, 0.60% fee                        -88.5%    -100.0%  -8.65        -   -88.5%  fail
+                                                                 956 trades, won 10%, average -120.2 bp of equity
+SOL ORB, New session, spot, no fees                                          -5.6%     -34.3%  -0.22        -    -5.6%  fail
+                                                                 956 trades, won 13%, average -2.5 bp of equity
+SOL ORB, New session, futures: long/short 4x, 0.05%                         -59.3%     -99.3%  -1.35        -   -59.3%  fail
+                                                                 1907 trades, won 15%, average -22.2 bp of equity
+SOL ORB, New session, futures, no fees                                       +5.2%     -66.9%   0.28        -    +5.2%  fail
+                                                                 1907 trades, won 15%, average +4.6 bp of equity
+SOL ORB, Late session, spot: long only, 1x, 0.60% fee                       -87.0%    -100.0%  -9.88        -   -87.0%  fail
+                                                                 943 trades, won 9%, average -115.3 bp of equity
+SOL ORB, Late session, spot, no fees                                         +5.1%     -18.2%   0.37        -    +5.1%  fail
+                                                                 943 trades, won 18%, average +3.3 bp of equity
+SOL ORB, Late session, futures: long/short 4x, 0.05%                        -61.1%     -99.4%  -1.64        -   -61.1%  fail
+                                                                 1898 trades, won 17%, average -24.2 bp of equity
+SOL ORB, Late session, futures, no fees                                     +14.2%     -60.5%   0.43        -   +14.2%  fail
+                                                                 1898 trades, won 17%, average +6.3 bp of equity
+SOL ORB, All 4 session, spot: long only, 1x, 0.60% fee                     -100.0%    -100.0% -20.61        -  -100.0%  fail
+                                                                 3821 trades, won 8%, average -119.1 bp of equity
+SOL ORB, All 4 session, spot, no fees                                        -5.8%     -44.6%  -0.09        -    -5.8%  fail
+                                                                 3821 trades, won 16%, average -0.4 bp of equity
+SOL ORB, All 4 session, futures: long/short 4x, 0.05%                       -99.1%    -100.0%  -4.29        -   -99.1%  fail
+                                                                 7586 trades, won 16%, average -30.7 bp of equity
+SOL ORB, All 4 session, futures, no fees                                    -25.7%     -88.7%   0.04        -   -25.7%  fail
+                                                                 7586 trades, won 16%, average +0.2 bp of equity
+
+Past results with simulated fills; not a promise and not financial advice.
