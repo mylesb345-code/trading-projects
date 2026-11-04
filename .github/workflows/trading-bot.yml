@@ -15,6 +15,9 @@ concurrency:
   group: trading-bot
   cancel-in-progress: false
 
+env:
+  NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}  # phone-alert channel, kept secret so the public repo does not reveal it
+
 jobs:
   check:
     runs-on: ubuntu-latest

@@ -1,6 +1,8 @@
 # Opening-range breakout day trader (orb-bot/) on the Alpaca PAPER account: enters QQQ around 9:35 AM New York with a
 # bracket (stop + target) order and closes at 3:55 PM. Each pair of times covers summer and winter time; the run that
 # falls outside its New York window exits in seconds, and a repeat morning run finds today's order and does nothing.
+# Extra-session paper test (orb-bot/sessions.py): "early" (pre-open + London, started ~3:50 AM New York by
+# cron-job.org) and "late" (after-hours, started by the close run below). Each watches the price for hours.
 name: orb-bot
 
 on:
@@ -10,21 +12,25 @@ on:
   workflow_dispatch:
     inputs:
       command:
-        description: "morning or close"
+        description: "morning, close, early or late"
         required: true
         default: morning
 
 permissions:
   contents: read
+  actions: write  # the close run starts the after-hours session run
 
 concurrency:
-  group: orb-bot
+  group: orb-bot-${{ (inputs.command == 'early' || inputs.command == 'late') && inputs.command || 'main' }}
   cancel-in-progress: false
+
+env:
+  NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}  # phone-alert channel, kept secret so the public repo does not reveal it
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: ${{ inputs.command == 'early' && 350 || inputs.command == 'late' && 300 || 90 }}
     steps:
       - uses: actions/checkout@v5
 
@@ -42,4 +48,13 @@ jobs:
             "20 13,14 * * 1-5") COMMAND=morning ;;
             "30 19,20 * * 1-5") COMMAND=close ;;
           esac
-          python3 orb-bot/bot.py "$COMMAND"
+          case "$COMMAND" in
+            early|late) python3 orb-bot/sessions.py "$COMMAND" ;;
+            *) python3 orb-bot/bot.py "$COMMAND" ;;
+          esac
+
+      - name: Start the after-hours session run
+        if: always() && (inputs.command == 'close' || github.event.schedule == '30 19,20 * * 1-5')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run orb-bot.yml --ref main -f command=late  # exits at once unless it's ~3:30-4:30 PM New York

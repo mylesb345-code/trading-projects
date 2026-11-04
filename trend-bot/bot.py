@@ -17,6 +17,7 @@ It messages your phone (ntfy) when it trades, and on Fridays with a short summar
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -37,7 +38,7 @@ NEW_YORK = ZoneInfo("America/New_York")
 def notify(title: str, body: str) -> None:
     print(f"[phone] {title}: {body}")
     try:
-        topic = json.loads((ROOT / "trading-bot" / "config.json").read_text())["ntfy_topic"]
+        topic = os.environ.get("NTFY_TOPIC") or json.loads((ROOT / "trading-bot" / "config.json").read_text())["ntfy_topic"]
         req = urllib.request.Request(f"https://ntfy.sh/{topic}", data=body.encode(), headers={"Title": title})
         urllib.request.urlopen(req, timeout=15)
     except Exception as e:  # a failed alert never stops a trade decision

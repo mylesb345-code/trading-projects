@@ -6,7 +6,7 @@
   "history_days": 1000,
   "loop_minutes": 15,
   "ntfy_server": "https://ntfy.sh",
-  "ntfy_topic": "old-topic-removed",
+  "ntfy_topic": "",
   "paper_multiplier": 1,
   "symbols": {
     "AVAX-USD": "tested",

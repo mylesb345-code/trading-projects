@@ -116,8 +116,10 @@ def notify(title, body):
     """Phone alert on the same ntfy channel as the swing bot (trading-bot/config.json). Silent if there isn't one."""
     import urllib.request
     try:
-        with open(os.path.join(HERE, "..", "trading-bot", "config.json")) as f:
-            topic = json.load(f).get("ntfy_topic")
+        topic = os.environ.get("NTFY_TOPIC")
+        if not topic:
+            with open(os.path.join(HERE, "..", "trading-bot", "config.json")) as f:
+                topic = json.load(f).get("ntfy_topic")
         if topic:
             req = urllib.request.Request(f"https://ntfy.sh/{topic}", data=body.encode(), method="POST",
                                          headers={"Title": title, "Priority": "high"})

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import sys
 import time as clock
 import urllib.request
@@ -50,7 +51,7 @@ def now() -> datetime:
 def notify(title: str, body: str) -> None:
     print(f"[phone] {title}: {body}")
     try:
-        topic = json.loads((ROOT / "trading-bot" / "config.json").read_text())["ntfy_topic"]
+        topic = os.environ.get("NTFY_TOPIC") or json.loads((ROOT / "trading-bot" / "config.json").read_text())["ntfy_topic"]
         urllib.request.urlopen(urllib.request.Request(f"https://ntfy.sh/{topic}", data=body.encode(),
                                                       headers={"Title": title}), timeout=15)
     except Exception as e:
@@ -200,7 +201,7 @@ def morning(dry: bool) -> int:
 
 
 def daily_pnl(trading, since: datetime) -> dict:
-    """Realized QQQ P&L per day from the account's fills (the bot is flat every night)."""
+    """Realized QQQ P&L per day from the account's regular-hours fills (the bot is flat every night)."""
     out: dict = {}
     page = None
     while True:
@@ -211,9 +212,10 @@ def daily_pnl(trading, since: datetime) -> dict:
         if not fills:
             break
         for f in fills:
-            if f["symbol"] != SYMBOL:
+            t = datetime.fromisoformat(f["transaction_time"].replace("Z", "+00:00")).astimezone(NY)
+            if f["symbol"] != SYMBOL or not time(9, 30) <= t.time() < time(16):  # sessions.py trades outside these
                 continue
-            day = datetime.fromisoformat(f["transaction_time"].replace("Z", "+00:00")).astimezone(NY).date()
+            day = t.date()
             sign = 1 if f["side"].startswith("sell") else -1
             out[day] = out.get(day, 0.0) + sign * float(f["qty"]) * float(f["price"])
         if len(fills) < 100:

@@ -15,6 +15,9 @@ concurrency:
   group: trading-bot  # never at the same time as the other jobs, so their saves can't clash
   cancel-in-progress: false
 
+env:
+  NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}  # phone-alert channel, kept secret so the public repo does not reveal it
+
 jobs:
   stocks:
     runs-on: ubuntu-latest
@@ -38,7 +41,6 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           ALPACA_DATA_FEED: iex
         run: |
-          export NTFY_TOPIC=$(python3 -c "import json; print(json.load(open('trading-bot/config.json'))['ntfy_topic'])")
           cd box-scanner && python3 main.py scan stocks --trading-days-only --market-open-only
 
       - name: Save the scanner's memory

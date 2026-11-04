@@ -15,6 +15,9 @@ concurrency:
   group: trading-bot  # never runs at the same time as the hourly bot, so their saves can't clash
   cancel-in-progress: false
 
+env:
+  NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}  # phone-alert channel, kept secret so the public repo does not reveal it
+
 jobs:
   research:
     runs-on: ubuntu-latest
