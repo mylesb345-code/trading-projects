@@ -65,6 +65,28 @@ BTC ORB, All 4 session, futures: long/short 4x, 0.05%                       -99.
 BTC ORB, All 4 session, futures, no fees                                    +76.5%     -93.1%   0.98  +341.5%   -19.9%  fail
                                                                  15394 trades, won 18%, average +5.5 bp of equity
 
+Hold SPY (price only)                                          2016-01-04   +13.0%     -34.2%   0.78   +13.2%   +13.0%  benchmark
+Stocks in play, Pre-open / Asia 4:00-7:00                                   -43.2%     -99.8%  -8.03   -23.3%   -56.2%  fail
+                                                                 16601 trades, won 26%, average -3.67 bp of equity
+Stocks in play, Pre-open / Asia 4:00-7:00 (no costs)                         +4.8%     -23.3%   0.75    +3.8%    +5.6%  fail
+                                                                 16601 trades, won 38%, average +0.32 bp of equity
+Stocks in play, London 7:00-9:30                                            -76.3%    -100.0% -14.10   -62.7%   -83.9%  fail
+                                                                 25659 trades, won 18%, average -6.03 bp of equity
+Stocks in play, London 7:00-9:30 (no costs)                                 -38.5%     -99.6%  -5.18   -26.0%   -47.6%  fail
+                                                                 25659 trades, won 23%, average -2.03 bp of equity
+Stocks in play, New York 9:30-16:00                                         +30.3%     -26.9%   1.43   +25.4%   +34.7%  PASS
+                                                                 53184 trades, won 13%, average +0.58 bp of equity
+Stocks in play, New York 9:30-16:00 (no costs)                              +51.5%     -24.8%   2.19   +49.1%   +53.7%  PASS
+                                                                 53184 trades, won 13%, average +0.89 bp of equity
+Stocks in play, Late 16:00-20:00                                            -50.9%    -100.0% -10.13   -41.0%   -58.1%  fail
+                                                                 16076 trades, won 16%, average -4.77 bp of equity
+Stocks in play, Late 16:00-20:00 (no costs)                                 -11.2%     -72.4%  -1.79    -6.0%   -15.5%  fail
+                                                                 16076 trades, won 30%, average -0.79 bp of equity
+Stocks in play, All 4 sessions                                              -91.4%    -100.0%  -9.58   -78.8%   -96.0%  fail
+                                                                 111520 trades, won 17%, average -2.35 bp of equity
+Stocks in play, All 4 sessions (no costs)                                   -13.3%     -95.8%  -0.47    +7.6%   -28.0%  fail
+                                                                 111520 trades, won 22%, average -0.11 bp of equity
+
 Hold SPY (price only)                                          2016-05-18   +13.2%     -34.2%   0.79   +13.9%   +13.0%  benchmark
 Hold ETH                                                                    +63.5%     -93.9%   0.82  +139.3%   +21.2%  benchmark
                                                                  buy and hold, for comparison
@@ -154,3 +176,15 @@ SOL ORB, All 4 session, futures, no fees                                    -25.
                                                                  7586 trades, won 16%, average +0.2 bp of equity
 
 Past results with simulated fills; not a promise and not financial advice.
+
+COST CHECK, stocks in play at 9:30 (the only stock result that passed). Same rules, higher cost per share per side
+(the $0.0045 above covers commission only; stop exits and 9:35 entries are market orders that also pay the spread):
+cost $/share/side   per yr   worst  Sharpe  to2020  2021-
+4x  $0.0045  +30.3%  -26.9%  1.43  +25.4%  +34.7%
+4x  $0.01     +8.4%  -40.0%  0.50   +1.5%  +14.6%
+4x  $0.02    -22.5%  -95.4% -1.18  -30.9%  -14.6%
+4x  $0.03    -44.7%  -99.8% -2.86  -53.0%  -36.4%
+1x  $0.0045   +7.2%   -7.2%  1.41   +6.2%   +8.0%
+1x  $0.01     +2.3%  -11.6%  0.48   +0.7%   +3.7%
+1x  $0.02     -5.9%  -52.6% -1.20   -8.5%   -3.7%
+The edge is under a cent a share: it survives only if real fills cost less than about $0.01/share per side.
