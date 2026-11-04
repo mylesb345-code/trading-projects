@@ -177,7 +177,10 @@ def morning(dry: bool) -> int:
         return 0
     acct = trading.get_account()
     equity, dtbp = float(acct.equity), float(acct.daytrading_buying_power or acct.buying_power)
-    qty = math.floor(min(equity * RISK / risk, MAX_LEV * equity / px, 0.9 * dtbp / px))
+    # Alpaca checks the lower of the two buying powers, and prices a short market order about 3% above the last
+    # trade; 2026-11-04's short was rejected for "insufficient buying power" when sized on dtbp alone
+    bp = min(dtbp, float(acct.buying_power))
+    qty = math.floor(min(equity * RISK / risk, MAX_LEV * equity / px, 0.9 * bp / (px * 1.03)))
     target = px + direction * TARGET_R * risk
     print(f"{'buy' if direction > 0 else 'short'} {qty} {SYMBOL} near {px:.2f}, stop {stop:.2f}, target "
           f"{target:.2f} (equity ${equity:,.0f}, day-trading buying power ${dtbp:,.0f})")
