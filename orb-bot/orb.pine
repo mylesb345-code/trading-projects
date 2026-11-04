@@ -1,0 +1,30 @@
+// The ORB bot's rules (orb-bot/bot.py) as a TradingView strategy, so its trades show on the chart.
+// Use on QQQ, 5-minute chart, regular trading hours only (extended hours off).
+//@version=6
+strategy("ORB bot (QQQ 5-min)", overlay=true, initial_capital=100000, commission_type=strategy.commission.cash_per_contract,
+     commission_value=0.0045, margin_long=25, margin_short=25)
+
+tz = "America/New_York"
+h = hour(time, tz)
+m = minute(time, tz)
+var float stopPx = na
+var float targetPx = na
+
+// 9:30-9:35 candle: up = buy, down = short, at the next candle's open; stop at its other end, target 10x the risk.
+// Risk 1% of equity, at most 4x leverage.
+if h == 9 and m == 30 and timeframe.period == "5"
+    dir = close > open ? 1 : close < open ? -1 : 0
+    stopPx := dir == 1 ? low : high
+    risk = math.abs(close - stopPx)
+    if dir != 0 and risk > 0
+        qty = math.floor(math.min(strategy.equity * 0.01 / risk, strategy.equity * 4 / close))
+        targetPx := close + dir * 10 * risk
+        strategy.entry("ORB", dir == 1 ? strategy.long : strategy.short, qty)
+        strategy.exit("Stop/target", "ORB", stop=stopPx, limit=targetPx)
+
+// Out at 3:55 PM (order sent at the close of the 3:50 candle).
+if h == 15 and m == 50
+    strategy.close_all(comment="3:55 close")
+
+plot(strategy.position_size != 0 ? stopPx : na, "Stop", color.red, style=plot.style_linebr)
+plot(strategy.position_size != 0 ? targetPx : na, "Target", color.green, style=plot.style_linebr)
