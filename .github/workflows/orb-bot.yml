@@ -3,6 +3,8 @@
 # falls outside its New York window exits in seconds, and a repeat morning run finds today's order and does nothing.
 # Extra-session paper test (orb-bot/sessions.py): "early" (pre-open + London, started ~3:50 AM New York by
 # cron-job.org) and "late" (after-hours, started by the close run below). Each watches the price for hours.
+# TJR-style paper test on SPY (orb-bot/tjr_bot.py): "tjr" is started by the morning run and watches 9:30-12:30;
+# the close run closes any SPY left at 3:55.
 name: orb-bot
 
 on:
@@ -12,16 +14,16 @@ on:
   workflow_dispatch:
     inputs:
       command:
-        description: "morning, close, early or late"
+        description: "morning, close, early, late or tjr"
         required: true
         default: morning
 
 permissions:
   contents: read
-  actions: write  # the close run starts the after-hours session run
+  actions: write  # the close run starts the after-hours session run; the morning run starts the TJR run
 
 concurrency:
-  group: orb-bot-${{ (inputs.command == 'early' || inputs.command == 'late') && inputs.command || 'main' }}
+  group: orb-bot-${{ (inputs.command == 'early' || inputs.command == 'late' || inputs.command == 'tjr') && inputs.command || 'main' }}
   cancel-in-progress: false
 
 env:
@@ -30,7 +32,7 @@ env:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.command == 'early' && 350 || inputs.command == 'late' && 300 || 90 }}
+    timeout-minutes: ${{ inputs.command == 'early' && 350 || inputs.command == 'late' && 300 || inputs.command == 'tjr' && 280 || 90 }}
     steps:
       - uses: actions/checkout@v5
 
@@ -50,8 +52,22 @@ jobs:
           esac
           case "$COMMAND" in
             early|late) python3 orb-bot/sessions.py "$COMMAND" ;;
+            tjr) python3 orb-bot/tjr_bot.py run ;;
             *) python3 orb-bot/bot.py "$COMMAND" ;;
           esac
+
+      - name: Close the TJR test's SPY (3:55 PM)
+        if: always() && (inputs.command == 'close' || github.event.schedule == '30 19,20 * * 1-5')
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python3 orb-bot/tjr_bot.py close
+
+      - name: Start the TJR run
+        if: always() && (inputs.command == 'morning' || github.event.schedule == '20 13,14 * * 1-5')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run orb-bot.yml --ref main -f command=tjr  # exits at once outside ~8:15 AM-12:30 PM New York
 
       - name: Start the after-hours session run
         if: always() && (inputs.command == 'close' || github.event.schedule == '30 19,20 * * 1-5')

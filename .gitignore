@@ -23,3 +23,4 @@ strategy-lab/cache/
 # Coinbase API key file (coinbase/connect.py): never upload
 coinbase/cdp_api_key.json
 *.pem
+.venv/
