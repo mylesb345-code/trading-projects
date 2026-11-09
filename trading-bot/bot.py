@@ -40,6 +40,7 @@ DEFAULTS = {
     "history_days": 1000,
     "paper_multiplier": 1,
     "trench_fee_on_wins": 0.08,
+    "paper_stake_usd": 1000,  # dollars per paper trade, only for showing results in dollars
     "ntfy_server": "https://ntfy.sh",
     "ntfy_topic": "",
     "daily_status": True,
@@ -232,8 +233,42 @@ def close_paper(st, coin, tested, candles, t, close, cfg, journal_path):
     })
     st["paper"] = None
     line = (f"Paper result: {p['side']} {money(p['entry_price'])} -> {money(close)} at x{mult} = {result:+.2f}% "
-            f"({after_fee:+.2f}% after Trench's {fee:.0%} fee on wins)")
+            f"({dollars(result, cfg)}); {after_fee:+.2f}% ({dollars(after_fee, cfg)}) after Trench's {fee:.0%} fee on wins")
     return line + (f". Wiped out: price moved {100 / mult:.1f}% against it." if wiped else "")
+
+
+def dollars(pct, cfg):
+    """A percent result on the paper stake, in dollars: +2.10% of $1,000 -> "+$21.00"."""
+    usd = cfg.get("paper_stake_usd", 1000) * pct / 100
+    return f"{'+' if usd >= 0 else '-'}${abs(usd):,.2f}"
+
+
+def bottom_line(cfg, state, closes, journal_path=JOURNAL_PATH):
+    """Running paper total in dollars: closed trades from the journal (after fee) plus open ones at today's close."""
+    stake = cfg.get("paper_stake_usd", 1000)
+    done = {"yes": [], "no": []}
+    if os.path.exists(journal_path):
+        with open(journal_path, newline="") as f:
+            for row in csv.DictReader(f):
+                try:
+                    done[row["tested"]].append(float(row["after_fee_pct"]))
+                except (KeyError, ValueError):
+                    continue
+    open_pct = {"yes": 0.0, "no": 0.0}
+    for symbol, st in state.get("coins", {}).items():
+        p, close = st.get("paper"), closes.get(symbol)
+        if p and close:
+            sign = 1 if p["side"] == "LONG" else -1
+            tested = "yes" if cfg["symbols"].get(symbol) == "tested" else "no"
+            open_pct[tested] += (close / p["entry_price"] - 1) * sign * cfg["paper_multiplier"] * 100
+    lines = []
+    for key, label in (("yes", "coins the bot alerts you to trade"), ("no", "paper-only coins")):
+        closed_usd = stake * sum(done[key]) / 100
+        total = closed_usd + stake * open_pct[key] / 100
+        sign = lambda v: f"{'+' if v >= 0 else '-'}${abs(v):,.2f}"
+        lines.append(f"{label}: {sign(total)} total ({sign(closed_usd)} from {len(done[key])} closed trades"
+                     + (f", {sign(total - closed_usd)} on the open one" if open_pct[key] else "") + ")")
+    return f"BOTTOM LINE at ${stake:,.0f} a trade:\n" + "\n".join(lines)
 
 
 def why_line(latest):
@@ -254,7 +289,7 @@ def status_line(coin, tested, st, latest, cfg):
     if p:
         sign = 1 if p["side"] == "LONG" else -1
         open_pct = (latest["close"] / p["entry_price"] - 1) * sign * cfg["paper_multiplier"] * 100
-        parts.append(f"bot's paper trade {open_pct:+.2f}% (before fee)")
+        parts.append(f"bot's paper trade {open_pct:+.2f}% ({dollars(open_pct, cfg)}) before fee")
     if st["position"] == "LONG":
         parts.append(f"exit if a daily close is below {money(latest['ema_fast'])}")
     elif st["position"] == "SHORT":
@@ -317,8 +352,14 @@ def run_once(cfg, state, now, notify, fetch=get_candles, journal_path=JOURNAL_PA
                     status.append(f"{coin} paper test changed today: " + lines[0].split(": ", 1)[1])
             else:
                 st["signal"] = entry
+        st["last_close"] = close
         status.append(status_line(coin, tested, st, latest, cfg))
 
+    closes = {}
+    for symbol in cfg["symbols"]:
+        st = coins.get(symbol)
+        if st and st.get("last_close"):
+            closes[symbol] = st["last_close"]
     for title, body in alerts:
         notify(title, body, "high")
     if newest_candle is not None and cfg["daily_status"]:
@@ -328,6 +369,7 @@ def run_once(cfg, state, now, notify, fetch=get_candles, journal_path=JOURNAL_PA
                           "plus one status message after each daily close.")
         else:
             title = f"Daily check {day_str(newest_candle)}"
+        status.append(bottom_line(cfg, state, closes, journal_path))
         notify(title, "\n".join(status), "default")
 
     limit = cfg["alert_after_failed_runs"]
