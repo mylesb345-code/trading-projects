@@ -7,3 +7,4 @@ run_at,symbol,date,close,fast_prev,slow_prev,fast,slow,action,qty,reason,order_i
 2026-11-05 20:42 EST,AAPL,2026-11-05,nan,342.91050109863284,334.8436010742187,nan,nan,HOLD,0,no crossover between the last two days,,
 2026-11-06 20:02 EST,AAPL,2026-11-06,nan,343.09800109863284,335.4580010986328,nan,nan,HOLD,0,no crossover between the last two days,,
 2026-11-09 22:41 EST,AAPL,2026-11-09,350.69000244140625,343.38450012207034,336.01380126953126,343.8705001831055,336.63360107421875,HOLD,0,no crossover between the last two days,,
+2026-11-10 20:21 EST,AAPL,2026-11-10,nan,343.8705001831055,336.63360107421875,nan,nan,HOLD,0,no crossover between the last two days,,
