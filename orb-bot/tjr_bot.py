@@ -243,8 +243,21 @@ def close() -> int:
         if o.symbol == SYMBOL:
             trading.cancel_order_by_id(o.id)
     if any(p.symbol == SYMBOL for p in trading.get_all_positions()):
-        clock.sleep(2)
-        order = trading.close_position(SYMBOL)
+        # Cancels are not instant: the safety stop keeps the shares "held" until it is really gone,
+        # and closing too early fails with "insufficient qty available" (2026-11-12).
+        order = None
+        for _ in range(30):
+            clock.sleep(2)
+            if any(o.symbol == SYMBOL for o in trading.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN, limit=500))):
+                continue
+            try:
+                order = trading.close_position(SYMBOL)
+                break
+            except Exception as e:
+                print("close failed, trying again:", e)
+        if order is None:
+            notify("PAPER TJR: could NOT close SPY at 3:55", "Check the account; the position is still open.")
+            return 1
         for _ in range(30):
             if str(trading.get_order_by_id(order.id).status).endswith("FILLED"):
                 break
