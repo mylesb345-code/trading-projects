@@ -1,8 +1,8 @@
 {
   "coins": {
     "AVAX-USD": {
-      "last_candle": 1794441600,
-      "last_close": 8.354,
+      "last_candle": 1794528000,
+      "last_close": 8.225,
       "paper": {
         "entry_price": 8.645,
         "entry_time": 1794182400,
@@ -15,29 +15,29 @@
       ]
     },
     "BTC-USD": {
-      "last_candle": 1794441600,
-      "last_close": 71369.9,
+      "last_candle": 1794528000,
+      "last_close": 68236.54,
       "paper": null,
       "position": null,
       "signal": null
     },
     "ETH-USD": {
-      "last_candle": 1794441600,
-      "last_close": 2017.36,
+      "last_candle": 1794528000,
+      "last_close": 1928.28,
       "paper": null,
       "position": null,
       "signal": null
     },
     "SOL-USD": {
-      "last_candle": 1794441600,
-      "last_close": 81.62,
+      "last_candle": 1794528000,
+      "last_close": 78.11,
       "paper": null,
       "position": null,
       "signal": null
     },
     "XRP-USD": {
-      "last_candle": 1794441600,
-      "last_close": 1.0402,
+      "last_candle": 1794528000,
+      "last_close": 1.01,
       "paper": {
         "entry_price": 1.3074,
         "entry_time": 1792627200,
